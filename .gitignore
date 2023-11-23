@@ -1,0 +1,11 @@
+# Ignore Everything...
+*
+
+# Except these files...
+!.gitignore
+!README.md
+!ns-3.40/src/helix/*
+!helix-rs/*
+
+# ...even if they are in subdirectories
+# !*/
