@@ -5,7 +5,6 @@
 !.gitignore
 !README.md
 !ns-3.40/src/helix/*
-!helix-rs/*
-
-# ...even if they are in subdirectories
-# !*/
+!helix-rs/Cargo.toml
+!helix-rs/cbindgen.toml
+!helix-rs/src/lib.rs
