@@ -1,3 +1,16 @@
 /helix-rs/result
 /helix-rs/result-*
 /helix-ns3/build
+
+.DS_Store
+.config
+.vscode/
+
+/__pycache__/
+/bake/
+/build.py
+/build/
+/constants.py
+/netanim-3.109/
+/ns-3.40/
+/util.py

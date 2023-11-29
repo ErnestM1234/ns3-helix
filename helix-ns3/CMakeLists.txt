@@ -32,6 +32,26 @@ set_target_properties(helix-ns3 PROPERTIES PUBLIC_HEADER
 
 target_include_directories(helix-ns3 PRIVATE .)
 
+find_package(PkgConfig)
+
+pkg_check_modules(ns3-core REQUIRED IMPORTED_TARGET ns3-core)
+pkg_check_modules(ns3-point-to-point REQUIRED IMPORTED_TARGET ns3-point-to-point)
+pkg_check_modules(ns3-internet REQUIRED IMPORTED_TARGET ns3-internet)
+pkg_check_modules(ns3-network REQUIRED IMPORTED_TARGET ns3-network)
+pkg_check_modules(ns3-bridge REQUIRED IMPORTED_TARGET ns3-bridge)
+pkg_check_modules(ns3-traffic-control REQUIRED IMPORTED_TARGET ns3-traffic-control)
+pkg_check_modules(ns3-applications REQUIRED IMPORTED_TARGET ns3-applications)
+
+target_link_libraries(helix-ns3
+    PkgConfig::ns3-core
+    PkgConfig::ns3-point-to-point
+    PkgConfig::ns3-internet
+    PkgConfig::ns3-network
+    PkgConfig::ns3-bridge
+    PkgConfig::ns3-traffic-control
+    PkgConfig::ns3-applications
+    /nix/store/z6fp1lx063ww3dc4gckg83cyyrbjbp1v-helix-rs-0.0.1/lib/libhelix_rs.dylib)
+
 include(GNUInstallDirs)
 
 install(TARGETS helix-ns3
