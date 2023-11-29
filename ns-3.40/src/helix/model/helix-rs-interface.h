@@ -1,19 +1,4 @@
 
-/*
- * This is a wrapper class for the Rust implementation of
- * the HELIX protocol. The purpose of this class is for
- * accessing the benefits of the ns3 logging system.
- * 
- * Besides set up function calls, there should be a
- * one to one mapping between these calls and calls to 
- * rust functions.
- * 
- * This class shold also bridge the gap between the
- * rust functions and c++. It should handle all type
- * conversion etc.
- * 
- * 
-*/
 #ifndef HELIX_RS_INTERFACE_H
 #define HELIX_RS_INTERFACE_H
 
@@ -54,6 +39,7 @@ class HelixSocketImpl;
 class HelixRsInterface : public Object
 {
     public:
+
         /**
          * \brief Get the type ID.
          * \return the object TypeId
@@ -102,10 +88,6 @@ class HelixRsInterface : public Object
          */
         Ptr<Packet> ConvertFFIBuffToPacket(FFISharedBuffer b);
          
-
-        
-        /* -------------------- Member Variables -------------------- */
-
 };
 
 } // namespace ns3

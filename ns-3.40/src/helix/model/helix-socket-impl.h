@@ -58,27 +58,14 @@ class Ipv6Interface;
 
 /**
  * \ingroup socket
- * \ingroup udp
+ * \ingroup helix
  *
- * \brief A sockets interface to UDP
+ * \brief A sockets interface to HELIX
  *
- * This class subclasses ns3::UdpSocket, and provides a socket interface
- * to ns3's implementation of UDP.
+ * This class subclasses HelixSocket, and provides a socket interface
+ * to an ns3 implementation of HELIX. This implementation is built
+ * on UDP.
  *
- * For IPv4 packets, the TOS is set according to the following rules:
- * - if the socket is connected, the TOS set for the socket is used
- * - if the socket is not connected, the TOS specified in the destination address
- *   passed to SendTo is used, while the TOS set for the socket is ignored
- * In both cases, a SocketIpTos tag is only added to the packet if the resulting
- * TOS is non-null. The Bind and Connect operations set the TOS for the
- * socket to the value specified in the provided address.
- * If the TOS determined for a packet (as described above) is not null, the
- * packet is assigned a priority based on that TOS value (according to the
- * Socket::IpTos2Priority function). Otherwise, the priority set for the
- * socket is assigned to the packet. Setting a TOS for a socket also sets a
- * priority for the socket (according to the Socket::IpTos2Priority function).
- * A SocketPriority tag is only added to the packet if the resulting priority
- * is non-null.
  */
 
 class HelixSocketImpl : public HelixSocket
@@ -116,6 +103,67 @@ class HelixSocketImpl : public HelixSocket
     SocketErrno GetErrno() const override;
     SocketType GetSocketType() const override;
     Ptr<Node> GetNode() const override;
+
+    /* -------------------- Setting Callbacks -------------------- */
+
+    /**
+     * \brief Specify callbacks to allow the caller to determine if
+     * the connection succeeds of fails.
+     * \param connectionSucceeded this callback is invoked when the
+     *        connection request initiated by the user is successfully
+     *        completed. The callback is passed  back a pointer to
+     *        the same socket object.
+     * \param connectionFailed this callback is invoked when the
+     *        connection request initiated by the user is unsuccessfuly
+     *        completed. The callback is passed back a pointer to the
+     *        same socket object.
+     */
+    void SetConnectCallback(Callback<void, Ptr<Socket>> connectionSucceeded,
+                            Callback<void, Ptr<Socket>> connectionFailed) override;
+    /**
+     * \brief Detect socket recv() events such as graceful shutdown or error.
+     *
+     * For connection-oriented sockets, the first callback is used to signal
+     * that the remote side has gracefully shut down the connection, and the
+     * second callback denotes an error corresponding to cases in which
+     * a traditional recv() socket call might return -1 (error), such
+     * as a connection reset.  For datagram sockets, these callbacks may
+     * never be invoked.
+     *
+     * \param normalClose this callback is invoked when the
+     *        peer closes the connection gracefully
+     * \param errorClose this callback is invoked when the
+     *        connection closes abnormally
+     */
+    void SetCloseCallbacks(Callback<void, Ptr<Socket>> normalClose,
+                           Callback<void, Ptr<Socket>> errorClose) override;
+    /**
+     * \brief Accept connection requests from remote hosts
+     * \param connectionRequest Callback for connection request from peer.
+     *        This user callback is passed a pointer to this socket, the
+     *        ip address and the port number of the connection originator.
+     *        This callback must return true to accept the incoming connection,
+     *        false otherwise. If the connection is accepted, the
+     *        "newConnectionCreated" callback will be invoked later to
+     *        give access to the user to the socket created to match
+     *        this new connection. If the user does not explicitly
+     *        specify this callback, all incoming  connections will be refused.
+     * \param newConnectionCreated Callback for new connection: when a new
+     *        is accepted, it is created and the corresponding socket is passed
+     *        back to the user through this callback. This user callback is
+     *        passed a pointer to the new socket, and the ip address and
+     *        port number of the connection originator.
+     */
+    void SetAcceptCallback(Callback<bool, Ptr<Socket>, const Address&> connectionRequest,
+                           Callback<void, Ptr<Socket>, const Address&> newConnectionCreated) override;
+    /**
+     * \brief Notify application when a packet has been sent from transport
+     *        protocol (non-standard socket call)
+     * \param dataSent Callback for the event that data is sent from the
+     *        underlying transport protocol.  This callback is passed a
+     *        pointer to the socket, and the number of bytes sent.
+     */
+    void SetDataSentCallback(Callback<void, Ptr<Socket>, uint32_t> dataSent) override;
 
     /**
      * \brief Notify application when new data is available to be read.
@@ -163,13 +211,21 @@ class HelixSocketImpl : public HelixSocket
      */
     void SetSendCallback(Callback<void, Ptr<Socket>, uint32_t> sendCb) override;
 
+    /* -------------------- Callbacks Passed to UDP -------------------- */
+
+    void HandleConnectionSucceeded(Ptr<Socket> socket);
+    void HandleConnectionFailed(Ptr<Socket> socket);
+    void HandleNormalClose(Ptr<Socket> socket);
+    void HandleErrorClose(Ptr<Socket> socket);
+    bool HandleConnectionRequest(Ptr<Socket> socket, const Address& addr);
+    void HandleNewConnectionCreated(Ptr<Socket> socket, const Address& addr);
+    void HandleDataSent(Ptr<Socket> socket, uint32_t size);
      /**
      * \brief Callback invoked by UDP when it receives data
      * \param socket the udp socket
      * 
      */
     void HandleRecv(Ptr<Socket> socket);
-
 
      /**
      * \brief Callback invoked by UDP when it sends data
@@ -194,7 +250,6 @@ class HelixSocketImpl : public HelixSocket
     int Close() override;
 
 
-  
     int ShutdownSend() override;
     int ShutdownRecv() override;
     uint32_t GetTxAvailable() const override;
@@ -209,23 +264,30 @@ class HelixSocketImpl : public HelixSocket
 
 
   private:
-    /**
-     * \brief UdpSocketFactory friend class.
-     * \relates UdpSocketFactory
-     */
-    friend class UdpSocketFactory;
-    // invoked by Udp class
+    // /**
+    //  * \brief UdpSocketFactory friend class.
+    //  * \relates UdpSocketFactory
+    //  * 
+    //  * Note: I do not really know what this is doing here.
+    //  */
+    // friend class UdpSocketFactory;
 
 
-    // Connections to other layers of TCP/IP
-    Ptr<Node> m_node;                 //!< the associated node
-    Ptr<Socket> m_udp_socket;  //!< the associated socket
+    // Connections to other layers of UDP
+    Ptr<Node> m_node;          //!< the associated node
+    Ptr<Socket> m_udpSocket;  //!< the associated socket
     Ptr<HelixL4Protocol> m_helix;
     Ptr<HelixRsInterface> m_helix_rs_interface;
 
-    Callback<void, Ptr<Socket>> m_handle_recv;
-    Callback<void, Ptr<Socket>, uint32_t> m_handle_send;
-
+    Callback<void, Ptr<Socket>> m_handleConnectionSucceeded;
+    Callback<void, Ptr<Socket>> m_handleConnectionFailed;
+    Callback<void, Ptr<Socket>> m_handleNormalClose;
+    Callback<void, Ptr<Socket>> m_handleErrorClose;
+    Callback<bool, Ptr<Socket>, const Address&> m_handleConnectionRequest;
+    Callback<void, Ptr<Socket>, const Address&> m_handleNewConnectionCreated;
+    Callback<void, Ptr<Socket>, uint32_t> m_handleDataSent;
+    Callback<void, Ptr<Socket>> m_handleReceivedData;
+    Callback<void, Ptr<Socket>, uint32_t> m_handleSend;
     
 };
 

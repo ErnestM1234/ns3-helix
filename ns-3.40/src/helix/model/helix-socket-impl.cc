@@ -35,7 +35,7 @@ HelixSocketImpl::GetTypeId()
 
 HelixSocketImpl::HelixSocketImpl()
     : m_node(nullptr),
-      m_udp_socket(nullptr),
+      m_udpSocket(nullptr),
       m_helix(nullptr),
       m_helix_rs_interface(nullptr)
 {
@@ -46,18 +46,6 @@ HelixSocketImpl::HelixSocketImpl()
 HelixSocketImpl::~HelixSocketImpl()
 {
     NS_LOG_FUNCTION(this);
-
-    // if (m_helix_rs_interface) {
-    //     m_helix_rs_interface->~HelixRsInterface();
-    // }
-    m_helix_rs_interface = nullptr;
-
-    // if (m_udp_socket != nullptr) {
-    //     delete m_udp_socket;
-    //     m_udp_socket = nullptr;
-    // }
-
-    m_node = nullptr;
 }
 
 void
@@ -65,7 +53,7 @@ HelixSocketImpl::SetNode(Ptr<Node> node)
 {
     NS_LOG_FUNCTION(this << node);
     m_node = node;
-    // No need to pass node to m_udp_socket, this is done already when it was initialized in udp-l4-protocol
+    // No need to pass node to m_udpSocket, this is done already when it was initialized in udp-l4-protocol
 }
 
 void
@@ -79,47 +67,166 @@ void
 HelixSocketImpl::SetUdpSocket(Ptr<Socket> udp_socket)
 {
     NS_LOG_FUNCTION(this << udp_socket);
-    m_udp_socket = udp_socket;
+    m_udpSocket = udp_socket;
 }
 
 Socket::SocketErrno
 HelixSocketImpl::GetErrno() const
 {
     NS_LOG_FUNCTION(this);
-    return m_udp_socket->GetErrno();
+    return m_udpSocket->GetErrno();
 }
 
 Socket::SocketType
 HelixSocketImpl::GetSocketType() const
 {
-    return m_udp_socket->GetSocketType();
+    return m_udpSocket->GetSocketType();
 }
 
 Ptr<Node>
 HelixSocketImpl::GetNode() const
 {
     NS_LOG_FUNCTION(this);
-    return m_udp_socket->GetNode();
+    return m_udpSocket->GetNode();
 }
 
-void 
+void
+HelixSocketImpl::SetConnectCallback(
+    Callback<void, Ptr<Socket>> connectionSucceeded,
+    Callback<void, Ptr<Socket>> connectionFailed)
+{
+    NS_LOG_FUNCTION(this);
+
+    m_handleConnectionSucceeded = connectionSucceeded;
+    m_handleConnectionFailed = connectionFailed;
+
+    // tie udp recv callback to trigger a helix function instead
+    m_udpSocket->SetConnectCallback(
+        MakeCallback(&HelixSocketImpl::HandleConnectionSucceeded, this),
+        MakeCallback(&HelixSocketImpl::HandleConnectionFailed, this)
+    );
+}
+
+void
+HelixSocketImpl::SetCloseCallbacks(
+    Callback<void, Ptr<Socket>> normalClose,
+    Callback<void, Ptr<Socket>> errorClose)
+{
+    NS_LOG_FUNCTION(this);
+
+    m_handleNormalClose = normalClose;
+    m_handleErrorClose = errorClose;
+
+    // tie udp recv callback to trigger a helix function instead
+    m_udpSocket->SetCloseCallbacks(
+        MakeCallback(&HelixSocketImpl::HandleNormalClose, this),
+        MakeCallback(&HelixSocketImpl::HandleErrorClose, this)
+    );
+}
+
+
+void
+HelixSocketImpl::SetAcceptCallback(
+    Callback<bool, Ptr<Socket>, const Address&> connectionRequest,
+    Callback<void, Ptr<Socket>, const Address&> newConnectionCreated)
+{
+    NS_LOG_FUNCTION(this);
+
+    m_handleConnectionRequest = connectionRequest;
+    m_handleNewConnectionCreated = newConnectionCreated;
+
+    // tie udp recv callback to trigger a helix function instead
+    m_udpSocket->SetAcceptCallback(
+        MakeCallback(&HelixSocketImpl::HandleConnectionRequest, this),
+        MakeCallback(&HelixSocketImpl::HandleNewConnectionCreated, this)
+    );
+}
+
+void
+HelixSocketImpl::SetDataSentCallback(Callback<void, Ptr<Socket>, uint32_t> dataSent)
+{
+    NS_LOG_FUNCTION(this);
+    m_handleDataSent = dataSent;
+
+    // tie udp recv callback to trigger a helix function instead
+    m_udpSocket->SetDataSentCallback(MakeCallback(&HelixSocketImpl::HandleDataSent, this));
+}
+
+void
 HelixSocketImpl::SetRecvCallback(Callback<void, Ptr<Socket>> receivedData)
 {
     NS_LOG_FUNCTION(this);
-    m_handle_recv = receivedData;
+
+    m_handleReceivedData = receivedData;
 
     // tie udp recv callback to trigger a helix function instead
-    m_udp_socket->SetRecvCallback(MakeCallback(&HelixSocketImpl::HandleRecv, this));
+    m_udpSocket->SetRecvCallback(MakeCallback(&HelixSocketImpl::HandleRecv, this));
 }
 
 void
 HelixSocketImpl::SetSendCallback(Callback<void, Ptr<Socket>, uint32_t> sendCb)
 {
     NS_LOG_FUNCTION(this);
-    m_handle_send = sendCb;
+    m_handleSend = sendCb;
 
     // tie udp send callback to trigger a helix function instead
-    m_udp_socket->SetSendCallback(MakeCallback(&HelixSocketImpl::HandleSend, this));
+    m_udpSocket->SetSendCallback(MakeCallback(&HelixSocketImpl::HandleSend, this));
+}
+
+void
+HelixSocketImpl::HandleConnectionSucceeded(Ptr<Socket> socket)
+{
+    NS_LOG_FUNCTION(this);
+
+    m_handleConnectionSucceeded(socket);
+}
+
+void
+HelixSocketImpl::HandleConnectionFailed(Ptr<Socket> socket)
+{
+    NS_LOG_FUNCTION(this);
+
+    m_handleConnectionFailed(socket);
+}
+
+void
+HelixSocketImpl::HandleNormalClose(Ptr<Socket> socket)
+{
+    NS_LOG_FUNCTION(this);
+
+    m_handleNormalClose(socket);
+}
+
+void
+HelixSocketImpl::HandleErrorClose(Ptr<Socket> socket)
+{
+    NS_LOG_FUNCTION(this);
+
+    m_handleErrorClose(socket);
+}
+
+bool
+HelixSocketImpl::HandleConnectionRequest(Ptr<Socket> socket, const Address& addr)
+{
+    NS_LOG_FUNCTION(this);
+
+    return m_handleConnectionRequest(socket, addr);
+}
+
+void
+HelixSocketImpl::HandleNewConnectionCreated(Ptr<Socket> socket, const Address& addr)
+{
+    NS_LOG_FUNCTION(this);
+
+    m_handleNewConnectionCreated(socket, addr);
+}
+
+void
+HelixSocketImpl::HandleDataSent(Ptr<Socket> socket, uint32_t size)
+{
+    NS_LOG_FUNCTION(this);
+
+    m_handleDataSent(this, size);
 }
 
 void
@@ -130,7 +237,7 @@ HelixSocketImpl::HandleRecv(Ptr<Socket> socket)
     // pass a reference to this socket instead of udp socket
     // this is because these functions will invoke udp functions
     // in a 1-to-1 mapping
-    m_handle_recv(this);
+    m_handleReceivedData(this);
 }
 
 void
@@ -141,7 +248,7 @@ HelixSocketImpl::HandleSend(Ptr<Socket> socket, uint32_t num_bytes)
     // pass a reference to this socket instead of udp socket
     // this is because these functions will invoke udp functions
     // in a 1-to-1 mapping
-    m_handle_send(this, num_bytes);
+    m_handleSend(this, num_bytes);
 }
 
 void
@@ -153,7 +260,7 @@ HelixSocketImpl::BindToNetDevice(Ptr<NetDevice> netdevice)
     Address address = Address();
     m_helix_rs_interface->Bind(address);
 
-    m_udp_socket->BindToNetDevice(netdevice);
+    m_udpSocket->BindToNetDevice(netdevice);
 }
 
 int
@@ -166,7 +273,7 @@ HelixSocketImpl::Bind()
     Address address = Address();
     m_helix_rs_interface->Bind(address);
 
-    return m_udp_socket->Bind();
+    return m_udpSocket->Bind();
 }
 
 int
@@ -174,12 +281,11 @@ HelixSocketImpl::Bind6()
 {
     NS_LOG_FUNCTION(this);
 
-    // TODO: rust will make a callback to bind
     // TODO: provide address
     Address address = Address();
     m_helix_rs_interface->Bind(address);
 
-    return m_udp_socket->Bind6();
+    return m_udpSocket->Bind6();
 }
 
 int
@@ -187,11 +293,10 @@ HelixSocketImpl::Bind(const Address& address)
 {
     NS_LOG_FUNCTION(this << address);
 
-    // TODO: rust will make a callback to bind
     Address addr = Address();
     m_helix_rs_interface->Bind(addr);
 
-    return m_udp_socket->Bind(address);
+    return m_udpSocket->Bind(address);
 }
 
 int
@@ -199,21 +304,18 @@ HelixSocketImpl::Connect(const Address& address)
 {
     NS_LOG_FUNCTION(this << address);
 
-
-    // TODO: rust will make a callback to connect
     Address addr = Address();
     m_helix_rs_interface->Connect(addr);
 
-    return m_udp_socket->Connect(address);
+    return m_udpSocket->Connect(address);
 }
 
 int
 HelixSocketImpl::Listen()
 {
-    // TODO: rust will make a callback to listen
     m_helix_rs_interface->Listen();
 
-    return m_udp_socket->Listen();
+    return m_udpSocket->Listen();
 }
 
 int
@@ -221,11 +323,10 @@ HelixSocketImpl::Send(Ptr<Packet> p, uint32_t flags)
 {
     NS_LOG_FUNCTION(this << p << flags);
 
-    // TODO: Add logic for adding flags
-    // TODO: remove m_udp_socket->Send(p, flags), because this will be called by rust
+    // TODO: Add logic for maximum packet size (TX available or smth)
     m_helix_rs_interface->Send(p);
 
-    return m_udp_socket->Send(p, flags);
+    return m_udpSocket->Send(p, flags);
 }
 
 
@@ -236,12 +337,11 @@ HelixSocketImpl::SendTo(Ptr<Packet> p, uint32_t flags, const Address& address)
 
 
     // TODO: Add logic for adding address
-    // TODO: Add logic for adding flags
-    // TODO: remove m_udp_socket->Send(p, flags), because this will be called by rust
+    // TODO: Add logic for maximum packet size (TX available or smth)
     m_helix_rs_interface->Send(p);
 
     // TODO: Call Helix rs packet encoder implementation
-    return m_udp_socket->SendTo(p, flags, address);
+    return m_udpSocket->SendTo(p, flags, address);
 }
 
 Ptr<Packet>
@@ -249,7 +349,7 @@ HelixSocketImpl::Recv(uint32_t maxSize, uint32_t flags)
 {
     NS_LOG_FUNCTION(this << maxSize << flags);
 
-    Ptr<Packet> p = m_udp_socket->Recv(maxSize, flags);
+    Ptr<Packet> p = m_udpSocket->Recv(maxSize, flags);
     return m_helix_rs_interface->Recv(p);
 }
 
@@ -260,7 +360,7 @@ HelixSocketImpl::RecvFrom(uint32_t maxSize, uint32_t flags, Address& fromAddress
     
     // TODO: Add address
     // TODO: pass received info to m_helix_rs_interface
-    Ptr<Packet> p = m_udp_socket->RecvFrom(maxSize, flags, fromAddress);
+    Ptr<Packet> p = m_udpSocket->RecvFrom(maxSize, flags, fromAddress);
     return m_helix_rs_interface->Recv(p);
 }
 
@@ -272,61 +372,61 @@ HelixSocketImpl::Close()
     // TODO: rust will make a callback to udp close
     m_helix_rs_interface->Close();
 
-    return m_udp_socket->Close();
+    return m_udpSocket->Close();
 }
 
 int
 HelixSocketImpl::ShutdownSend()
 {
     NS_LOG_FUNCTION(this);
-    return m_udp_socket->ShutdownSend();
+    return m_udpSocket->ShutdownSend();
 }
 
 int
 HelixSocketImpl::ShutdownRecv()
 {
     NS_LOG_FUNCTION(this);
-    return m_udp_socket->ShutdownRecv();
+    return m_udpSocket->ShutdownRecv();
 }
 
 uint32_t
 HelixSocketImpl::GetTxAvailable() const
 {
     NS_LOG_FUNCTION(this);
-    return m_udp_socket->GetTxAvailable();
+    return m_udpSocket->GetTxAvailable();
 }
 
 uint32_t
 HelixSocketImpl::GetRxAvailable() const
 {
     NS_LOG_FUNCTION(this);
-    return m_udp_socket->GetRxAvailable();
+    return m_udpSocket->GetRxAvailable();
 }
 
 int
 HelixSocketImpl::GetSockName(Address& address) const
 {
     NS_LOG_FUNCTION(this << address);
-    return m_udp_socket->GetSockName(address);
+    return m_udpSocket->GetSockName(address);
 }
 
 int
 HelixSocketImpl::GetPeerName(Address& address) const
 {
     NS_LOG_FUNCTION(this << address);
-    return m_udp_socket->GetPeerName(address);
+    return m_udpSocket->GetPeerName(address);
 }
 
 bool
 HelixSocketImpl::SetAllowBroadcast(bool allowBroadcast)
 {
-    return m_udp_socket->SetAllowBroadcast(allowBroadcast);
+    return m_udpSocket->SetAllowBroadcast(allowBroadcast);
 }
 
 bool
 HelixSocketImpl::GetAllowBroadcast() const
 {
-    return m_udp_socket->GetAllowBroadcast();
+    return m_udpSocket->GetAllowBroadcast();
 }
 
 void
@@ -335,7 +435,7 @@ HelixSocketImpl::Ipv6JoinGroup(Ipv6Address address,
                              std::vector<Ipv6Address> sourceAddresses)
 {
     NS_LOG_FUNCTION(this << address << &filterMode << &sourceAddresses);
-    m_udp_socket->Ipv6JoinGroup(address, filterMode, sourceAddresses);
+    m_udpSocket->Ipv6JoinGroup(address, filterMode, sourceAddresses);
 }
 
 

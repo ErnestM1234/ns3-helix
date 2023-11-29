@@ -22,11 +22,11 @@
 //
 //
 // - Tracing of queues and packet receptions to file
-//   "tcp-large-transfer.tr"
+//   "helix-large-transfer.tr"
 // - pcap traces also generated in the following files
-//   "tcp-large-transfer-$n-$i.pcap" where n and i represent node and interface
+//   "helix-large-transfer-$n-$i.pcap" where n and i represent node and interface
 // numbers respectively
-//  Usage (e.g.): ./ns3 run tcp-large-transfer
+//  Usage (e.g.): ./ns3 run helix-large-transfer
 
 #include "ns3/applications-module.h"
 #include "ns3/core-module.h"
@@ -35,7 +35,6 @@
 #include "ns3/network-module.h"
 #include "ns3/point-to-point-module.h"
 #include "ns3/log.h"
-
 
 #include "ns3/helix-helper.h"
 #include "ns3/helix-socket.h"
@@ -49,8 +48,6 @@
 using namespace ns3;
 
 NS_LOG_COMPONENT_DEFINE("HelixLargeTransfer");
-// NS_OBJECT_ENSURE_REGISTERED(HelixLargeTransfer);
-// NS_LOG_COMPONENT_DEFINE("HelixExample");
 
 /// The number of bytes to send in this simulation.
 static const uint32_t totalTxBytes = 2000000;
@@ -86,7 +83,14 @@ void StartFlow(Ptr<Socket> localSocket, Ipv4Address servAddress, uint16_t servPo
  */
 void WriteUntilBufferFull(Ptr<Socket> localSocket, uint32_t txSpace);
 
+/**
+ * Close a given socket.
+*/
 void CloseSocket(Ptr<Socket> socket);
+
+/**
+ * Log a recv event.
+*/
 void HandleRead(Ptr<Socket> socket);
 
 
@@ -131,13 +135,13 @@ main(int argc, char* argv[])
     NetDeviceContainer dev0 = p2p.Install(n0n1);
     NetDeviceContainer dev1 = p2p.Install(n1n2);
 
-    // Now add ip/tcp stack to all nodes.
+    // Now add ip/tcp/udp etc. stack to all nodes.
     InternetStackHelper internet;
     internet.InstallAll();
 
-    // Aggregate helix onto nodes
+    // Aggregate helix onto nodes as well.
     HelixStackHelper helixStackHelper;
-    helixStackHelper.AddHelix(n0n1.Get(0)); // TODO: figure out why you only have to do aggregation on one node?
+    helixStackHelper.AddHelix(n0n1.Get(0));
     helixStackHelper.AddHelix(n0n1.Get(1));
     helixStackHelper.AddHelix(n1n2.Get(1));
 
@@ -154,10 +158,7 @@ main(int argc, char* argv[])
     ///////////////////////////////////////////////////////////////////////////
     // Simulation 1
     //
-    // Send 2000000 bytes over a connection to server port 50000 at time 0
-    // Should observe SYN exchange, a lot of data segments and ACKS, and FIN
-    // exchange.  FIN exchange isn't quite compliant with TCP spec (see release
-    // notes for more info)
+    // Send 2000000 bytes over a connection to server port 50000 at time 0.
     //
     ///////////////////////////////////////////////////////////////////////////
 

@@ -23,7 +23,7 @@
 #include "ns3/internet-module.h"
 
 #include "ns3/ip-l4-protocol.h"
-
+#include "ns3/udp-l4-protocol.h"
 
 #include "ns3/packet.h"
 #include "ns3/ptr.h"
@@ -77,8 +77,6 @@ class HelixL4Protocol : public IpL4Protocol
      * \param node the node
      */
     void SetNode(Ptr<Node> node);
-
-
     int GetProtocolNumber() const override;
 
     /**
@@ -89,6 +87,7 @@ class HelixL4Protocol : public IpL4Protocol
     Ptr<Socket> CreateSocket();
 
     // inherited from Ipv4L4Protocol
+    // TODO: fill out these functions
     IpL4Protocol::RxStatus Receive(Ptr<Packet> p,
                                    const Ipv4Header& header,
                                    Ptr<Ipv4Interface> interface) override;
@@ -96,6 +95,7 @@ class HelixL4Protocol : public IpL4Protocol
                                    const Ipv6Header& header,
                                    Ptr<Ipv6Interface> interface) override;
 
+    // TODO: fill out these functions
     void ReceiveIcmp(Ipv4Address icmpSource,
                      uint8_t icmpTtl,
                      uint8_t icmpType,
@@ -119,6 +119,10 @@ class HelixL4Protocol : public IpL4Protocol
     // From IpL4Protocol
     IpL4Protocol::DownTargetCallback GetDownTarget() const override;
     IpL4Protocol::DownTargetCallback6 GetDownTarget6() const override;
+    // From UdpL4Protocol
+    // void SetDownTarget(UdpL4Protocol::DownTargetCallback cb) override;
+
+    void SetUdp(UdpL4Protocol udp);
 
   
   protected:

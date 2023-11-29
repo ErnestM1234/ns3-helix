@@ -39,31 +39,3 @@ HelixSocket::~HelixSocket()
 }
 
 } // namespace ns3
-
-
-
-
-// Establishing a UDP socket
-/*
-    NS_LOG_FUNCTION(this << m_ipv4->GetAddress(i, 0).GetLocal());
-    Ptr<Ipv4L3Protocol> l3 = m_ipv4->GetObject<Ipv4L3Protocol>();
-    if (l3->GetNAddresses(i) > 1)
-    {
-        NS_LOG_WARN("AODV does not work with more then one address per each interface.");
-    }
-    Ipv4InterfaceAddress iface = l3->GetAddress(i, 0);
-    if (iface.GetLocal() == Ipv4Address("127.0.0.1"))
-    {
-        return;
-    }
-
-    // Create a socket to listen only on this interface
-    Ptr<Socket> socket = Socket::CreateSocket(GetObject<Node>(), HelixSocketFactory::GetTypeId());
-    NS_ASSERT(socket);
-    socket->SetRecvCallback(MakeCallback(&RoutingProtocol::RecvAodv, this));
-    socket->BindToNetDevice(l3->GetNetDevice(i));
-    socket->Bind(InetSocketAddress(iface.GetLocal(), AODV_PORT));
-    socket->SetAllowBroadcast(true);
-    socket->SetIpRecvTtl(true);
-    m_socketAddresses.insert(std::make_pair(socket, iface));
-*/

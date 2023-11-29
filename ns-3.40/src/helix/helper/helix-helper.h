@@ -18,7 +18,13 @@ class HelixL4Protocol;
 // Each class should be documented using Doxygen,
 // and have an \ingroup helix directive
 
-/* ... */
+/**
+ * \ingroup helix
+ * Helper functions for helix.
+ * 
+ * Currently these do not require any state, so perhaps
+ * move to a helix implementation file.
+ */
 
 class HelixStackHelper
 {

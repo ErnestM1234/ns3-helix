@@ -10,6 +10,7 @@
 #include "ns3/node.h"
 #include "ns3/object-map.h"
 #include "ns3/packet.h"
+#include "ns3/callback.h"
 
 #include <unordered_map>
 
@@ -104,24 +105,6 @@ HelixL4Protocol::ReceiveIcmp(Ipv4Address icmpSource,
 {
     NS_LOG_FUNCTION(this << icmpSource << icmpTtl << icmpType << icmpCode << icmpInfo
                          << payloadSource << payloadDestination);
-    // uint16_t src;
-    // uint16_t dst;
-    // src = payload[0] << 8;
-    // src |= payload[1];
-    // dst = payload[2] << 8;
-    // dst |= payload[3];
-
-    // Ipv4EndPoint* endPoint = m_endPoints->SimpleLookup(payloadSource, src, payloadDestination, dst);
-    // if (endPoint != nullptr)
-    // {
-    //     endPoint->ForwardIcmp(icmpSource, icmpTtl, icmpType, icmpCode, icmpInfo);
-    // }
-    // else
-    // {
-    //     NS_LOG_DEBUG("no endpoint found source=" << payloadSource
-    //                                              << ", destination=" << payloadDestination
-    //                                              << ", src=" << src << ", dst=" << dst);
-    // }
 }
 
 void
@@ -136,82 +119,12 @@ HelixL4Protocol::ReceiveIcmp(Ipv6Address icmpSource,
 {
     NS_LOG_FUNCTION(this << icmpSource << icmpTtl << icmpType << icmpCode << icmpInfo
                          << payloadSource << payloadDestination);
-    // uint16_t src;
-    // uint16_t dst;
-    // src = payload[0] << 8;
-    // src |= payload[1];
-    // dst = payload[2] << 8;
-    // dst |= payload[3];
-
-    // Ipv6EndPoint* endPoint =
-    //     m_endPoints6->SimpleLookup(payloadSource, src, payloadDestination, dst);
-    // if (endPoint != nullptr)
-    // {
-    //     endPoint->ForwardIcmp(icmpSource, icmpTtl, icmpType, icmpCode, icmpInfo);
-    // }
-    // else
-    // {
-    //     NS_LOG_DEBUG("no endpoint found source=" << payloadSource
-    //                                              << ", destination=" << payloadDestination
-    //                                              << ", src=" << src << ", dst=" << dst);
-    // }
 }
 
 IpL4Protocol::RxStatus
 HelixL4Protocol::Receive(Ptr<Packet> packet, const Ipv4Header& header, Ptr<Ipv4Interface> interface)
 {
     NS_LOG_FUNCTION(this << packet << header);
-    // UdpHeader udpHeader;
-    // if (Node::ChecksumEnabled())
-    // {
-    //     udpHeader.EnableChecksums();
-    // }
-
-    // udpHeader.InitializeChecksum(header.GetSource(), header.GetDestination(), PROT_NUMBER);
-
-    // // We only peek at the header for now (instead of removing it) so that it will be intact
-    // // if we have to pass it to a IPv6 endpoint via:
-    // //
-    // //   HelixL4Protocol::Receive (Ptr<Packet> packet, Ipv6Address &src, Ipv6Address &dst, ...)
-
-    // packet->PeekHeader(udpHeader);
-
-    // if (!udpHeader.IsChecksumOk())
-    // {
-    //     NS_LOG_INFO("Bad checksum : dropping packet!");
-    //     return IpL4Protocol::RX_CSUM_FAILED;
-    // }
-
-    // NS_LOG_DEBUG("Looking up dst " << header.GetDestination() << " port "
-    //                                << udpHeader.GetDestinationPort());
-    // Ipv4EndPointDemux::EndPoints endPoints = m_endPoints->Lookup(header.GetDestination(),
-    //                                                              udpHeader.GetDestinationPort(),
-    //                                                              header.GetSource(),
-    //                                                              udpHeader.GetSourcePort(),
-    //                                                              interface);
-    // if (endPoints.empty())
-    // {
-    //     if (this->GetObject<Ipv6>())
-    //     {
-    //         NS_LOG_LOGIC("  No Ipv4 endpoints matched on HelixL4Protocol, trying Ipv6 " << this);
-    //         Ptr<Ipv6Interface> fakeInterface;
-    //         Ipv6Header ipv6Header;
-    //         Ipv6Address src = Ipv6Address::MakeIpv4MappedAddress(header.GetSource());
-    //         Ipv6Address dst = Ipv6Address::MakeIpv4MappedAddress(header.GetDestination());
-    //         ipv6Header.SetSource(src);
-    //         ipv6Header.SetDestination(dst);
-    //         return (this->Receive(packet, ipv6Header, fakeInterface));
-    //     }
-
-    //     NS_LOG_LOGIC("RX_ENDPOINT_UNREACH");
-    //     return IpL4Protocol::RX_ENDPOINT_UNREACH;
-    // }
-
-    // packet->RemoveHeader(udpHeader);
-    // for (auto endPoint = endPoints.begin(); endPoint != endPoints.end(); endPoint++)
-    // {
-    //     (*endPoint)->ForwardUp(packet->Copy(), header, udpHeader.GetSourcePort(), interface);
-    // }
     return IpL4Protocol::RX_OK;
 }
 
@@ -219,38 +132,6 @@ IpL4Protocol::RxStatus
 HelixL4Protocol::Receive(Ptr<Packet> packet, const Ipv6Header& header, Ptr<Ipv6Interface> interface)
 {
     NS_LOG_FUNCTION(this << packet << header.GetSource() << header.GetDestination());
-    // UdpHeader udpHeader;
-    // if (Node::ChecksumEnabled())
-    // {
-    //     udpHeader.EnableChecksums();
-    // }
-
-    // udpHeader.InitializeChecksum(header.GetSource(), header.GetDestination(), PROT_NUMBER);
-
-    // packet->RemoveHeader(udpHeader);
-
-    // if (!udpHeader.IsChecksumOk() && !header.GetSource().IsIpv4MappedAddress())
-    // {
-    //     NS_LOG_INFO("Bad checksum : dropping packet!");
-    //     return IpL4Protocol::RX_CSUM_FAILED;
-    // }
-
-    // NS_LOG_DEBUG("Looking up dst " << header.GetDestination() << " port "
-    //                                << udpHeader.GetDestinationPort());
-    // Ipv6EndPointDemux::EndPoints endPoints = m_endPoints6->Lookup(header.GetDestination(),
-    //                                                               udpHeader.GetDestinationPort(),
-    //                                                               header.GetSource(),
-    //                                                               udpHeader.GetSourcePort(),
-    //                                                               interface);
-    // if (endPoints.empty())
-    // {
-    //     NS_LOG_LOGIC("RX_ENDPOINT_UNREACH");
-    //     return IpL4Protocol::RX_ENDPOINT_UNREACH;
-    // }
-    // for (auto endPoint = endPoints.begin(); endPoint != endPoints.end(); endPoint++)
-    // {
-    //     (*endPoint)->ForwardUp(packet->Copy(), header, udpHeader.GetSourcePort(), interface);
-    // }
     return IpL4Protocol::RX_OK;
 }
 
@@ -281,7 +162,6 @@ HelixL4Protocol::GetDownTarget6() const
 }
 
 
-
 void
 HelixL4Protocol::DoDispose()
 {
@@ -293,9 +173,7 @@ HelixL4Protocol::DoDispose()
     m_sockets.clear();
 
     m_node = nullptr;
-    /*
-     = MakeNullCallback<void,Ptr<Packet>, Ipv4Address, Ipv4Address, uint8_t, Ptr<Ipv4Route> > ();
-    */
+
     IpL4Protocol::DoDispose();
 }
 
@@ -308,37 +186,67 @@ void
 HelixL4Protocol::NotifyNewAggregate()
 {
     NS_LOG_FUNCTION(this);
-    Ptr<Node> node = this->GetObject<Node>();
-    Ptr<Ipv4> ipv4 = this->GetObject<Ipv4>();
-    Ptr<Ipv6> ipv6 = node->GetObject<Ipv6>();
+    // m_udp->NotifyNewAggregate();
+    // Ptr<Node> node = this->GetObject<Node>();
+    // Ptr<Ipv4> ipv4 = this->GetObject<Ipv4>();
+    // Ptr<Ipv6> ipv6 = node->GetObject<Ipv6>();
+    // Ptr<UdpL4Protocol> udp = node->GetObject<UdpL4Protocol>();
 
-    if (!m_node)
-    {
-        if (node && (ipv4 || ipv6))
-        {
-            this->SetNode(node);
-            Ptr<HelixSocketFactoryImpl> helixFactory = CreateObject<HelixSocketFactoryImpl>();
-            helixFactory->SetHelix(this);
-            node->AggregateObject(helixFactory);
-        }
-    }
+    // // Set node
 
-    // We set at least one of our 2 down targets to the IPv4/IPv6 send
-    // functions.  Since these functions have different prototypes, we
-    // need to keep track of whether we are connected to an IPv4 or
-    // IPv6 lower layer and call the appropriate one.
+    // if (!m_node)
+    // {
+    //     if (node && udp)
+    //     {
+    //         this->SetNode(node);
+    //         Ptr<HelixSocketFactoryImpl> helixFactory = CreateObject<HelixSocketFactoryImpl>();
+    //         helixFactory->SetHelix(this);
+    //         node->AggregateObject(helixFactory);
+    //     }
+    // }
 
-    if (ipv4 && m_downTarget.IsNull())
-    {
-        ipv4->Insert(this);
-        this->SetDownTarget(MakeCallback(&Ipv4::Send, ipv4));
-    }
-    if (ipv6 && m_downTarget6.IsNull())
-    {
-        ipv6->Insert(this);
-        this->SetDownTarget6(MakeCallback(&Ipv6::Send, ipv6));
-    }
-    IpL4Protocol::NotifyNewAggregate();
+    // // Set down target
+    // if (udp)
+    // {
+    //     this->SetDownTarget(MakeCallback(&UdpL4Protocol::Send, udp));
+    // }
+    // udp->AggregateObject(this);
+
+
+
+
+    // Ptr<Node> node = this->GetObject<Node>();
+    // Ptr<Ipv4> ipv4 = this->GetObject<Ipv4>();
+    // Ptr<Ipv6> ipv6 = node->GetObject<Ipv6>();
+
+
+    // if (!m_node)
+    // {
+    //     if (node && (ipv4 || ipv6))
+    //     {
+    //         this->SetNode(node);
+    //         Ptr<HelixSocketFactoryImpl> helixFactory = CreateObject<HelixSocketFactoryImpl>();
+    //         helixFactory->SetHelix(this);
+    //         node->AggregateObject(helixFactory);
+    //     }
+    // }
+
+    // // We set at least one of our 2 down targets to the IPv4/IPv6 send
+    // // functions.  Since these functions have different prototypes, we
+    // // need to keep track of whether we are connected to an IPv4 or
+    // // IPv6 lower layer and call the appropriate one.
+
+    // if (ipv4 && m_downTarget.IsNull())
+    // {
+    //     ipv4->Insert(this);
+    //     this->SetDownTarget(MakeCallback(&Ipv4::Send, ipv4));
+    // }
+    // if (ipv6 && m_downTarget6.IsNull())
+    // {
+    //     ipv6->Insert(this);
+    //     this->SetDownTarget6(MakeCallback(&Ipv6::Send, ipv6));
+    // }
+    // IpL4Protocol::NotifyNewAggregate();
 }
 
 

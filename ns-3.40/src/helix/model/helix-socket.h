@@ -9,7 +9,6 @@
 namespace ns3
 {
 
-
 /**
  * \ingroup socket
  *
