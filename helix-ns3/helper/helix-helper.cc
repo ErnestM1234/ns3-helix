@@ -1,5 +1,5 @@
 #include "helix-helper.h"
-#include "ns3/helix-socket-factory-impl.h"
+#include "../model/helix-socket-factory-impl.h"
 #include "ns3/node.h"
 #include "ns3/assert.h"
 

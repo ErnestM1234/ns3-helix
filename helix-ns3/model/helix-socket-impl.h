@@ -143,7 +143,8 @@ class HelixSocketImpl : public HelixSocket
      * 
      * \attention To implement you must mark Socket::SetRecvCallback() as virtual
      */
-    void SetRecvCallback(Callback<void, Ptr<Socket>> receivedData) override;
+    // void SetRecvCallback(Callback<void, Ptr<Socket>> receivedData) override;
+    void SetRecvCallback(Callback<void, Ptr<Socket>> receivedData);
 
     /**
      * \brief Notify application when space in transmit buffer is added
@@ -161,7 +162,8 @@ class HelixSocketImpl : public HelixSocket
      * 
      * This functions similarly to SetRecvCallback.
      */
-    void SetSendCallback(Callback<void, Ptr<Socket>, uint32_t> sendCb) override;
+    // void SetSendCallback(Callback<void, Ptr<Socket>, uint32_t> sendCb) override;
+    void SetSendCallback(Callback<void, Ptr<Socket>, uint32_t> sendCb);
 
      /**
      * \brief Callback invoked by UDP when it receives data

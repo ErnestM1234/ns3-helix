@@ -1,8 +1,8 @@
 #ifndef HELIX_HELPER_H
 #define HELIX_HELPER_H
 
-#include "ns3/helix.h"
-#include "ns3/helix-l4-protocol.h"
+#include "../model/helix.h"
+#include "../model/helix-l4-protocol.h"
 #include "ns3/core-module.h"
 #include "ns3/node.h"
 

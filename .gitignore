@@ -1,10 +1,3 @@
-# Ignore Everything...
-*
-
-# Except these files...
-!.gitignore
-!README.md
-!ns-3.40/src/helix/*
-!helix-rs/Cargo.toml
-!helix-rs/cbindgen.toml
-!helix-rs/src/lib.rs
+/helix-rs/result
+/helix-rs/result-*
+/helix-ns3/build

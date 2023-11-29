@@ -2,7 +2,7 @@
 
 
 #include "helix-rs-interface.h"
-#include "ns3/helix-socket-impl.h"
+#include "helix-socket-impl.h"
 
 
 
