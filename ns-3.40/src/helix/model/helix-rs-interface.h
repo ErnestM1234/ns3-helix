@@ -20,7 +20,7 @@
 
 #include "ns3/helix-socket-impl.h"
 
-#include "/Users/ernestmccarter/Documents/Princeton/School/concentration/senior thesis/ns3/workspace/ns-allinone-3.40/helix-rs/helix_rs.h"
+#include "/Users/ernestmccarter/Documents/Princeton/School/concentration/senior thesis/ns3/workspace/ns-allinone-3.40/helix-rs/result/include/helix_rs.h"
 
 #include "ns3/object.h"
 #include "ns3/core-module.h"
