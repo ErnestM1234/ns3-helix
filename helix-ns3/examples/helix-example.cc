@@ -14,10 +14,10 @@
 #include "ns3/inet6-socket-address.h"
 
 // helix
-#include "ns3/helix-helper.h"
-#include "ns3/helix-socket.h"
-#include "ns3/helix-l4-protocol.h"
-#include "ns3/helix-socket-factory-impl.h"
+#include "helper/helix-helper.h"
+#include "model/helix-socket.h"
+#include "model/helix-l4-protocol.h"
+#include "model/helix-socket-factory-impl.h"
 
 
 // Helix rs implementation

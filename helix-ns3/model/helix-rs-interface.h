@@ -20,7 +20,7 @@
 
 #include "helix-socket-impl.h"
 
-#include <helix_rs.h>
+#include <helix-ns3-bridge.h>
 
 #include "ns3/object.h"
 #include "ns3/core-module.h"

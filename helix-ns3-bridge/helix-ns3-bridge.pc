@@ -1,0 +1,9 @@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@
+
+Name: helix_ns3_bridge
+Description: Bridge between the Rust implementation of HELIX and ns-3
+Version: 0.1.0
+Cflags: -I${includedir}
+Libs: -L${libdir} -lhelix_ns3_bridge
