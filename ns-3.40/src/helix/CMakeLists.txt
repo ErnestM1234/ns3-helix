@@ -37,8 +37,9 @@ build_lib(
         ${libtraffic-control}
         ${libapplications}
         # /Users/ernestmccarter/Documents/Princeton/School/concentration/senior\ thesis/ns3/workspace/ns-allinone-3.40/helix-rs/target/debug/libhelix_rs.dylib
-        /Users/ernestmccarter/Documents/Princeton/School/concentration/senior\ thesis/ns3/workspace/ns-allinone-3.40/helix-rs/result/lib/libhelix_rs.dylib
+        /Users/ernestmccarter/Documents/Princeton/School/concentration/senior\ thesis/ns3/workspace/ns-allinone-3.40/helix-rs/target/debug/libhelix_rs.dylib
     TEST_SOURCES test/helix-test-suite.cc
                  ${examples_as_tests_sources}
 )
 
+#set_target_properties(libhelix PROPERTIES INSTALL_NAME_DIR /Users/ernestmccarter/Documents/Princeton/School/concentration/senior\ thesis/ns3/workspace/ns-allinone-3.40/helix-rs/result/lib/)
