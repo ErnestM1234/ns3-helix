@@ -6,6 +6,8 @@
 !README.md
 !ns-3.40/src/helix/*
 !ns-3.40/src/helix/CMakeLists.txt
+!ns-3.40/contrib/rdmi/*
+!ns-3.40/contrib/rdmi/CMakeLists.txt
 !helix-rs/Cargo.toml
 !helix-rs/cbindgen.toml
 !helix-rs/src/lib.rs
