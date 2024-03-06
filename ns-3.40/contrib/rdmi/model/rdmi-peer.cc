@@ -345,6 +345,7 @@ RDMIPeer::WriteToMsgBuffer(uint16_t id, Ptr<Packet> p)
   rdmi_buffer->WritePacket(p);
 }
 
+
 void
 RDMIPeer::WriteToDataBuffer(uint16_t id, Ptr<Packet> p)
 {

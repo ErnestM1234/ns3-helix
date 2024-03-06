@@ -13,6 +13,12 @@ TypeId RDMISocket::GetTypeId()
   static TypeId tid =
     TypeId("ns3::RDMI")
         .SetParent<Socket>()
+        .AddAttribute("MaxSegLifetime",
+                        "Maximum segment lifetime in seconds, use for TIME_WAIT state transition "
+                        "to CLOSED state",
+                        DoubleValue(120), /* RFC793 says MSL=2 minutes*/
+                        MakeDoubleAccessor(&TcpSocketBase::m_msl),
+                        MakeDoubleChecker<double>(0))
     ;
   return tid;
 }
