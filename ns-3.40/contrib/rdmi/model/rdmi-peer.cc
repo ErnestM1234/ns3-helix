@@ -147,15 +147,9 @@ size_t RDMIPeer::GetRdmiSocketCount() const
 /*  Public Methods */
 /* ******************************** */
 
-int RDMIPeer::Send(uint16_t id, Ptr<Packet> p)
+void RDMIPeer::SocketSendToMsgBuff(uint16_t id, Ptr<Packet> p)
 {
   NS_LOG_FUNCTION(this << id << p);
-
-  // get packet size
-  uint32_t packet_size = p->GetSize();
-
-  // make sure there space in socket buffer
-  NS_ASSERT(1);
 
   // Copy packet
   // This should be a cheap operation because it uses virtual memory and COW
@@ -163,34 +157,27 @@ int RDMIPeer::Send(uint16_t id, Ptr<Packet> p)
   Ptr<Packet> p_copy = new Packet(*PeekPointer(p));
 
   // add to socket buffer
-  WriteToSocketMsgBuffer(id, p_copy);
-  // TODO: data buffer as well
-
-  // return the packet size to show that has been stored in buff
-  return packet_size;
+  WriteToMsgBuffer(id, p_copy);
 }
 
-int RDMIPeer::Send(uint16_t id, Ptr<Packet> p, uint32_t flags)
+void RDMIPeer::SocketSendToDataBuff(uint16_t id, Ptr<Packet> p)
 {
-  NS_LOG_FUNCTION(this << id << p << flags);
-  return this->Send(id, p);
+  NS_LOG_FUNCTION(this << id << p);
+
+  // Copy packet
+  // TODO: Same issue here
+  Ptr<Packet> p_copy = new Packet(*PeekPointer(p));
+
+  // add to socket buffer
+  WriteToMsgBuffer(id, p_copy);
 }
+
 
 Ptr<Packet> RDMIPeer::Recv(uint16_t id, uint32_t maxSize, uint32_t flags)
 {
   NS_LOG_FUNCTION(this << id << maxSize << flags);
   return m_peerSocket->Recv(maxSize, flags);
 }
-
-
-uint32_t RDMIPeer::GetTxAvailable(uint16_t id) const
-{
-    NS_LOG_FUNCTION(this << id);
-
-    // TODO: implement prebuffering
-
-    return GetTotalTxAvailable() / GetRdmiSocketCount();
-}  
 
 
 uint32_t RDMIPeer::GetRxAvailable(uint16_t id) const
@@ -201,6 +188,21 @@ uint32_t RDMIPeer::GetRxAvailable(uint16_t id) const
 
     return 0; 
 }  
+
+
+uint32_t RDMIPeer::GetTxAvailableMsgBuff(uint16_t id) const
+{
+    NS_LOG_FUNCTION(this << id);
+    return GetMsgBuffer(id)->GetNodeCapacity();
+}
+
+
+uint32_t RDMIPeer::GetTxAvailableDataBuff(uint16_t id) const
+{
+    NS_LOG_FUNCTION(this << id);
+    return GetDataBuffer(id)->GetNodeCapacity();
+}  
+
 
 
 /* **************************************************************** */
@@ -246,45 +248,115 @@ uint32_t RDMIPeer::Decapsulate(Ptr<Packet> p, RDMIHeader h)
 /*  Private Methods */
 /* ******************************** */
 
-Ptr<RdmiBuffer>
-RDMIPeer::GetMessageBuffer(uint16_t id)
+uint16_t
+RDMIPeer::GetMsgBufferId(uint16_t id) const
 {
   NS_LOG_FUNCTION(this << id);
-  return m_rdmiSocketMsgBuffers.find(id)->second;
+  return id | (1 << 15);
+}
+
+uint16_t
+RDMIPeer::GetDataBufferId(uint16_t id) const
+{
+  NS_LOG_FUNCTION(this << id);
+  return id;
 }
 
 Ptr<RdmiBuffer>
-RDMIPeer::GetDataBuffer(uint16_t id)
+RDMIPeer::GetMsgBuffer(uint16_t id) const
 {
   NS_LOG_FUNCTION(this << id);
-  return m_rdmiSocketDataBuffers.find(id)->second;
+  return m_socketBuffers.find(GetMsgBufferId(id))->second;
 }
 
-void
-RDMIPeer::WriteToSocketMsgBuffer(uint16_t id, Ptr<Packet> p)
-{
-  NS_LOG_FUNCTION(this << id << p);
-  
-  // get a copy of the buffer
-  uint32_t packet_size = p->GetSize();
-  uint8_t *buffer = new uint8_t[packet_size]; // TODO: is there a faster way of doing this? (only 1 copy??)
-  p->CopyData(buffer, packet_size);
 
-  // write data to buffer
-  Ptr<RdmiBuffer> rdmi_buffer = GetMessageBuffer(id);
-  rdmi_buffer->WriteDatagram(buffer, packet_size);
+Ptr<RdmiBuffer>
+RDMIPeer::GetDataBuffer(uint16_t id) const
+{
+  NS_LOG_FUNCTION(this << id);
+  return m_socketBuffers.find(GetDataBufferId(id))->second;
 }
 
+
+bool
+RDMIPeer::CanCreateBufferPair()
+{
+  NS_LOG_FUNCTION(this);
+  return MSG_BUFF_SIZE + DATA_BUFF_SIZE <= m_tx_buffer->GetNodeAvailable();
+}
+
+
 void
-RDMIPeer::WriteToSocketDataBuffer(uint16_t id, Ptr<Packet> p)
+RDMIPeer::CreateBufferPair(uint16_t id)
+{
+  NS_LOG_FUNCTION(this << id);
+
+  // instantiate
+  Ptr<RdmiBuffer> msg_buffer = CreateObject<RdmiBuffer>();
+  Ptr<RdmiBuffer> data_buffer = CreateObject<RdmiBuffer>();
+
+  // transmission buffer donates
+  NS_ASSERT(CanCreateBufferPair());
+  m_tx_buffer->DonateNodes(msg_buffer, MSG_BUFF_SIZE);
+  m_tx_buffer->DonateNodes(data_buffer, DATA_BUFF_SIZE);
+
+  // add buffers to list
+  m_socketBuffers.insert(std::make_pair(
+    GetMsgBufferId(id),
+    msg_buffer));
+  m_rdmiSocketList.insert(std::make_pair(
+    GetDataBufferId(id),
+    data_buffer));
+}
+
+
+void
+RDMIPeer::RemoveBufferPair(uint16_t id)
+{
+  NS_LOG_FUNCTION(this << id);
+
+  // get buffers
+  Ptr<RdmiBuffer> msg_buffer = GetMsgBuffer(id);
+  Ptr<RdmiBuffer> data_buffer = GetDataBuffer(id);
+
+  // clear all data (O(number of nodes) time, each node is constant)
+  // TODO: is clearing necessary? can't this be done with good mem management?
+  msg_buffer->Clear();
+  data_buffer->Clear();
+
+  // donate nodes to transmission buffer
+  m_tx_buffer->DonateNodes(msg_buffer, msg_buffer->GetNodeCapacity());
+  m_tx_buffer->DonateNodes(data_buffer, data_buffer->GetNodeCapacity());
+}
+
+
+void
+RDMIPeer::WriteToMsgBuffer(uint16_t id, Ptr<Packet> p)
 {
   NS_LOG_FUNCTION(this << id << p);
+
+  // get buffer
+  Ptr<RdmiBuffer> rdmi_buffer = GetMsgBuffer(id);
   
   // make sure size of data can fit
-  uint32_t packet_size = p->GetSize();
+  NS_ASSERT(p->GetSize() <= rdmi_buffer->GetCapacityBytes());
 
-  // write data to buffer
+  // write to message buffer
+  rdmi_buffer->WritePacket(p);
+}
+
+void
+RDMIPeer::WriteToDataBuffer(uint16_t id, Ptr<Packet> p)
+{
+  NS_LOG_FUNCTION(this << id << p);
+  
+  // get buffer
   Ptr<RdmiBuffer> rdmi_buffer = GetDataBuffer(id);
+
+  // make sure size of data can fit
+  NS_ASSERT(p->GetSize() <= rdmi_buffer->GetCapacityBytes());
+
+  // write to data buffer
   rdmi_buffer->WritePacket(p);
 }
 

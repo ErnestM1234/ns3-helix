@@ -41,7 +41,7 @@ RdmiBuffer::~RdmiBuffer()
 /* **************************************************************** */
 
 void
-RdmiBuffer::WriteDatagram(uint8_t* buffer, uint32_t size)
+RdmiBuffer::WriteBuffer(uint8_t* buffer, uint32_t size)
 {
     NS_LOG_FUNCTION(this << buffer << size);
     // no datagrams of size 0, this messes up the demarkation of header nodes
@@ -152,82 +152,16 @@ RdmiBuffer::WritePacket(Ptr<Packet> p)
     // Sanity check: the packet should be empty now
     NS_ASSERT(p->GetSize() == 0);
 
-
     // update counts
     m_node_count += node_count;
     m_byte_count += node_count * node_space; // even if extra_bytes < node_space, entire node still used
-
-
-
-    // Write each section to the node
-    // TODO: this seems like an O(1) operation, except for the metadata update which
-    // is probably O(n), but it's unclear. We might be able to disable metadata, or
-    // perhapse metadata copying is neglegable (it does include bitshift ops, so pr
-    // not that bad).
-    p->RemoveAtStart(); // this just moves a pointer
-    // Remove the section from the packet
-
-
-
-    NS_LOG_FUNCTION(this << buffer << size);
-    // no datagrams of size 0, this messes up the demarkation of header nodes
-    NS_ASSERT(size <= m_byte_cap - m_byte_count && size != 0);
-
-    // get the number of nodes we will have to visit (nodes have all same capacity)
-    uint32_t node_space = m_end->GetCapacity(); // total bytes in a node
-    uint16_t node_count = (size / node_space) + 1; // integer div, so not counting overflow to last node
-    uint32_t extra_bytes = size % node_space;
-
-    // mark first node as a header node
-    m_end = m_end->GetNext();
-    m_end->SetDatagramLength(size);
-    
-    // write to nodes
-    if (node_count == 1) {  // case: one node
-
-        // write to the 1st node (TODO: OPTIMIZATION: only if there are extra bytes to write)
-        m_end->Write(buffer, extra_bytes);
-        m_end->SetMetadata(m_dest_port, m_seqno, m_msg_type);
-        m_seqno += 1;
-
-    } else {    // case: multiple nodes
-
-        // write to the 1st node
-        m_end->Write(buffer, size);
-        m_end->SetMetadata(m_dest_port, m_seqno, m_msg_type);
-        m_seqno += 1;
-
-        // write to nodes [2,n-1] (if they were to be one indexed)
-        for (int i = 1; i < node_count-1; i++) {
-            m_end = m_end->GetNext();
-            int offset = i * node_space; // TODO: Check that this offset works
-            m_end->Write(buffer + offset, node_space);
-            m_end->SetMetadata(m_dest_port, m_seqno, m_msg_type);
-            m_seqno += 1;
-        }
-
-        // write to final node (TODO: OPTIMIZATION: only if there are extra bytes to write)
-        m_end = m_end->GetNext();
-        int offset = (node_count-1) * node_space; // TODO: Check that this offset works
-        m_end->Write(buffer + offset, extra_bytes);
-        m_end->SetMetadata(m_dest_port, m_seqno, m_msg_type);
-        m_seqno += 1;
-    }
-
-    // update counts
-    m_byte_count += size;
-    m_node_count += node_count;
 }
 
 void
 RdmiBuffer::Write(uint8_t* buffer, uint32_t size)
 {
     NS_LOG_FUNCTION(this << buffer << size);
-    // lol, this is actually the same functionality we need. The only
-    // difference is setting SetDatagramLength() for the first node
-    // is not entirely necessary, but in the case of the databuff,
-    // that field doesn't really matter
-    WriteDatagram(buffer, size);
+    WriteBuffer(buffer, size);
 }
 
 void
@@ -260,7 +194,7 @@ RdmiBuffer::ReadDatagram(uint8_t* buffer)
     }
 
     // update counts
-    m_byte_count -= datagram_size;
+    m_byte_count -= node_count * node_space;
     m_node_count -= node_count;
 }
 
@@ -299,6 +233,16 @@ RdmiBuffer::GetAvailableDatagramSize() const
     return 0;
 }
 
+void
+RdmiBuffer::Clear()
+{
+    NS_LOG_FUNCTION(this);
+    RdmiNode* curr = m_start;
+    for (int i = 0; i < m_node_cap; i++) {
+        curr->Reset();
+        curr = curr->GetNext();
+    }
+}
 
 /* **************************************************************** */
 /* RDMI NODE MANIPULATION METHODS */
@@ -340,7 +284,7 @@ RdmiBuffer::DeallocateNodes()
 
 
 void
-RdmiBuffer::SwapNodes(RdmiBuffer* target, uint16_t size)
+RdmiBuffer::SwapNodes(Ptr<RdmiBuffer> target, uint16_t size)
 {
     NS_LOG_FUNCTION(this << target << size);
 
@@ -385,7 +329,7 @@ RdmiBuffer::SwapNodes(RdmiBuffer* target, uint16_t size)
 
 
 void
-RdmiBuffer::DonateNodes(RdmiBuffer* target, uint16_t size)
+RdmiBuffer::DonateNodes(Ptr<RdmiBuffer> target, uint16_t size)
 {
     NS_LOG_FUNCTION(this << target << size);
 
@@ -460,6 +404,12 @@ uint16_t
 RdmiBuffer::GetNodeCapacity() const
 {
     return m_node_cap;
+}
+
+uint16_t
+RdmiBuffer::GetNodeAvailable() const
+{
+    return m_node_cap - m_node_count;
 }
 
 

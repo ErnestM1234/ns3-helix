@@ -183,6 +183,7 @@ class RdmiNode {
         uint32_t        m_cap;              // the number of bytes allocated
 
         // meta data
+        // TODO: combine dest_port and message type
         uint16_t        m_dest_port;        // destination that this data is intended for
         uint32_t        m_seqno;            // sequence number of the data for the transmission    
         char            m_msg_type;         // message type 'm' for message, 'd' for data, \O for none

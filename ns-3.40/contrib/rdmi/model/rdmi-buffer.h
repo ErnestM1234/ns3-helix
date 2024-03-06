@@ -71,7 +71,7 @@ class RdmiBuffer : public Object {
          * \param buffer the input buffer to read from
          * \param size the number of bytes to read from the buffer
          */
-        void WriteDatagram(uint8_t* buffer, uint32_t size);
+        void WriteBuffer(uint8_t* buffer, uint32_t size);
 
         /**
          * \brief Writes a packet to the buffer
@@ -85,7 +85,6 @@ class RdmiBuffer : public Object {
          * \param size the number of bytes to read from the buffer
          */
         void Write(uint8_t* buffer, uint32_t size);
-
 
         /**
          * \brief Reads exactly one datagram from the buffer
@@ -119,6 +118,17 @@ class RdmiBuffer : public Object {
          * \brief returns the size of the first available datagram ready to be transmitted
          */
         uint16_t GetAvailableDatagramSize() const;
+
+        /**
+         * \brief Clear buffer
+         * 
+         * This clears every single buffer. This takes
+         * O(m_node_cap) time.
+         * 
+         * TODO: this might not be necessary with proper
+         * memory management.
+         */
+        void Clear();
 
         
         /* **************************************************************** */
@@ -177,7 +187,7 @@ class RdmiBuffer : public Object {
          * TODO: edgecase when (target start) == (target end -> next) (aka n-1 buffer)
          * TODO: edgecase when (target start) == (target end) (aka full buffer)
          */
-        void SwapNodes(RdmiBuffer* target, uint16_t size);
+        void SwapNodes(Ptr<RdmiBuffer> target, uint16_t size);
 
         /**
          * \brief removes nodes from the circular buffer and adds to the target
@@ -186,11 +196,13 @@ class RdmiBuffer : public Object {
          * 
          * This operation takes O(size) time. This handles all linking.
          * 
+         * TODO: When size = m_node_cap, this should only take O(1) time
+         * 
          * TODO: have some sort of locking mechanism while this is being performed
          * TODO: edgecase when (target start) == (target end -> next) (aka n-1 buffer)
          * TODO: edgecase when (target start) == (target end) (aka full buffer)
          */
-        void DonateNodes(RdmiBuffer* target, uint16_t size);
+        void DonateNodes(Ptr<RdmiBuffer> target, uint16_t size);
 
         /**
          * \brief Get the start node
@@ -227,6 +239,12 @@ class RdmiBuffer : public Object {
         uint16_t GetNodeCapacity() const;
 
         /**
+         * \brief Get the number of nodes available to be written to
+         * \return returns the number of nodes available
+         */
+        uint16_t GetNodeAvailable() const;
+
+        /**
          * \brief Sets the node count
          * \param count the new node count
          */
@@ -248,12 +266,14 @@ class RdmiBuffer : public Object {
         uint16_t        m_node_count;       // number of used nodes in the linked list (ie those that cannot be written to)
         uint16_t        m_node_cap;         // total number of nodes in the linked list 
 
+        // TODO: remove these two, these are not really necessary, can be calculated by nodes
         uint32_t        m_byte_count;       // number of bytes used
         uint32_t        m_byte_cap;         // total number of bytes that can be stored
 
         uint32_t        m_available_datagram_size;  // the size of the first available datagram ready to be transmitted
 
         // meta data
+        // TODO: combine dest_port and message type
         uint16_t        m_dest_port;        // destination that this data is intended for
         uint32_t        m_seqno;            // sequence number of the data for the transmission    
         char            m_msg_type;         // message type 'm' for message, 'd' for data, \O for none

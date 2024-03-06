@@ -42,6 +42,11 @@ class RdmiBuffer;
  * TODO: One paragraph description
  */
 
+// TODO: find a good number
+const uint32_t MAX_TX_BUFF_SIZE = 2048; // in nodes 
+const uint16_t MSG_BUFF_SIZE = 16; // in nodes
+const uint16_t DATA_BUFF_SIZE = 48; // in nodes
+
 class RDMIPeer : public Object {
     public:
         /**
@@ -165,7 +170,6 @@ class RDMIPeer : public Object {
          */
         size_t GetRdmiSocketCount() const;
 
-        // NOTE: this might end up living in the RDMI Client instance instead
         std::unordered_map<uint16_t, Ptr<RDMISocket> >      m_rdmiSocketList;    // A list of sockets currently interfacing with the client
 
         /* **************************************************************** */
@@ -181,24 +185,20 @@ class RDMIPeer : public Object {
     public:
 
         /**
-         * \brief Sends data down the network
+         * \brief Sends a packet to the msg buff
          * \param id the RDMISocket id
          * \param p packet to be sent
          * 
-         * In theory, we can carefully choose our advertised Tx such that
-         * we can immediately send whatever packet we have been given
          */
-        int Send(uint16_t id, Ptr<Packet> p);
+        void SocketSendToMsgBuff(uint16_t id, Ptr<Packet> p);
 
         /**
-         * \brief Sends data down the network
+         * \brief Sends a packet to the data buff
          * \param id the RDMISocket id
          * \param p packet to be sent
-         * \param flags not supported
          * 
-         * We do not support flags, so these are discarded.
          */
-        int Send(uint16_t id, Ptr<Packet> p, uint32_t flags);
+        void SocketSendToDataBuff(uint16_t id, Ptr<Packet> p);
 
         /**
          * \brief Return a packet to be forwarded to the client via the RDMISocket
@@ -214,12 +214,7 @@ class RDMIPeer : public Object {
          */
         uint32_t GetRxAvailable(uint16_t id) const;
 
-        /**
-         * \brief Total available Tx bytes for a given RdmiSocket
-         * \param id the RDMISocket id
-         * 
-         * TODO: Account for header bytes when calculating Tx
-         * 
+        /** 
          * NOTE: When we promise a RdmiSocket available Tx, we
          * have to guarentee that the RdmiSocket can use all
          * of these bytes. This raises an issue if the client
@@ -248,8 +243,21 @@ class RDMIPeer : public Object {
          * 
          * Solution 4: (place holder solution)
          * - Equal division of resources
+         * 
+         * Solution: prebuffering
          */
-        uint32_t GetTxAvailable(uint16_t id) const;  
+
+        /**
+         * \brief Get Tx Available for message buffer
+         * \param id the RDMISocket id
+        */
+        uint32_t GetTxAvailableMsgBuff(uint16_t id) const;
+
+        /**
+         * \brief Get Tx Available for data buffer
+         * \param id the RDMISocket id
+        */
+        uint32_t GetTxAvailableDataBuff(uint16_t id) const;  
 
 
         /* **************************************************************** */
@@ -292,32 +300,85 @@ class RDMIPeer : public Object {
         /**
          * \brief Remove multiplexing data from packet
          * \param id the rdmi socket id
+         * 
+         * If first bit is 1, it is a Msg Buffer
+         * The other bits are the socket address
+         * 
+         * // TODO: make sure this first bit is never used
          */
-        Ptr<RdmiBuffer> GetMessageBuffer(uint16_t id);
+        uint16_t GetMsgBufferId(uint16_t id) const;
+
+        /**
+         * \brief Remove multiplexing data from packet
+         * \param id the rdmi socket id
+         * 
+         * If first bit is 0, it is a Msg Buffer
+         * The other bits are the socket address
+         * 
+         * // TODO: make sure this first bit is never used
+         */
+        uint16_t GetDataBufferId(uint16_t id) const;
 
         /**
          * \brief Remove multiplexing data from packet
          * \param id the rdmi socket id
          */
-        Ptr<RdmiBuffer> GetDataBuffer(uint16_t id);
+        Ptr<RdmiBuffer> GetMsgBuffer(uint16_t id) const;
+
+        /**
+         * \brief Remove multiplexing data from packet
+         * \param id the rdmi socket id
+         */
+        Ptr<RdmiBuffer> GetDataBuffer(uint16_t id) const;
+
+        /**
+         * \brief Can create a new buffer pair given number of available bytes
+         * \returns true if there is enough bytes for adding a buffer
+         */
+        bool CanCreateBufferPair();
+
+        /**
+         * \brief Create a data buffer and message buffer
+         * \param id the RDMISocket id
+         * 
+         * There must be enough free nodes in the transmission buffer to
+         * perform this action.
+         */
+        void CreateBufferPair(uint16_t id);
+
+        /**
+         * \brief Create a data buffer and message buffer
+         * \param id the RDMISocket id
+         * 
+         * These nodes are cleared and reallocated to the buffer
+         */
+        void RemoveBufferPair(uint16_t id);
 
         /**
          * \brief Write to socket msg buffer
          * \param id the rdmi socket id
          * \param p the packet/datagram to be stored
+         * 
+         * There must be space in the buffer for the packet.
+         * 
+         * TODO: is this function really necessary?
          */
-        void WriteToSocketMsgBuffer(uint16_t id, Ptr<Packet> p);
+        void WriteToMsgBuffer(uint16_t id, Ptr<Packet> p);
+
         /**
          * \brief Write to socket msg buffer
          * \param id the rdmi socket id
          * \param p the packet/datagram to be stored
+         * 
+         * There must be space in the buffer for the packet.
+         * 
+         * TODO: is this function really necessary?
          */
-        void WriteToSocketDataBuffer(uint16_t id, Ptr<Packet> p);
+        void WriteToDataBuffer(uint16_t id, Ptr<Packet> p);
 
     private:
-        std::unordered_map<uint16_t, Ptr<RdmiBuffer> >      m_rdmiSocketMsgBuffers;    // A list of message buffers associated with each socket
-        std::unordered_map<uint16_t, Ptr<RdmiBuffer> >      m_rdmiSocketDataBuffers;    // A list of data buffers associated with each socket
-
+        Ptr<RdmiBuffer> m_tx_buffer; // transmission buffer
+        std::unordered_map<uint16_t, Ptr<RdmiBuffer> >      m_socketBuffers;    // A list of message buffers associated with each socket
 };
 
 
