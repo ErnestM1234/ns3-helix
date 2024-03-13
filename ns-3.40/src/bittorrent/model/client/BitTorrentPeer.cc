@@ -30,8 +30,6 @@
 #include "ns3/log.h"
 #include "ns3/packet.h"
 #include "ns3/tcp-socket-factory.h"
-// #include "ns3/helix-socket-factory-impl.h"
-// #include "ns3/helix-helper.h"
 #include "ns3/uinteger.h"
 
 #include <cstring> // for memcpy
@@ -122,10 +120,6 @@ void Peer::ConnectToPeer (Ipv4Address address, uint16_t port)
   m_peerSocket->SetAttribute ("SndBufSize", UintegerValue (BT_PEER_SOCKET_TRANSMIT_BUFFER_SIZE));
   m_peerSocket->SetAttribute ("RcvBufSize", UintegerValue (BT_PEER_SOCKET_RECEIVE_BUFFER_SIZE));
   m_peerSocket->SetAttribute ("SegmentSize", UintegerValue (BT_PEER_SOCKET_TCP_SEGMENT_SIZE_MAX));
-
-  // // Set up HELIX socket
-  // Ptr<SocketFactory> helixSocketFactory = m_myClient->GetNode()->GetObject<HelixSocketFactoryImpl>();
-  // m_peerSocket = helixSocketFactory->CreateSocket();
 
   // Step 3: Register all needed callbacks for this peer socket
   m_peerSocket->SetConnectCallback (MakeCallback (&Peer::HandleConnected, this), MakeCallback (&Peer::HandleConnectionFail, this));

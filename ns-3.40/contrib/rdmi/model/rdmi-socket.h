@@ -12,11 +12,17 @@
 #include "rdmi.h"
 #include "rdmi-peer.h"
 
-namespace ns3
-{
+namespace ns3 {
 
-class Node;
-class Packet;
+// class Node;
+// class Packet;
+
+namespace rdmi {
+
+// class ns3::Node;
+// class ns3::Packet;
+// typedef ns3::Node Node;
+// typedef ns3::Packet Packet;
 
 class RDMI;
 class RDMIPeer;
@@ -108,6 +114,7 @@ class RDMISocket : public Socket {
 };
 
 
+} // namespace rdmi
 } // namespace ns3
 
 #endif /* RDMI_SOCKET_H */

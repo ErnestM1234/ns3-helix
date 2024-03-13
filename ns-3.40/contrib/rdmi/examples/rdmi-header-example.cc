@@ -19,7 +19,7 @@ main(int argc, char* argv[])
     Packet::EnablePrinting();
 
     // instantiate a header.
-    RDMIHeader sourceHeader;
+    rdmi::RDMIHeader sourceHeader;
     sourceHeader.SetDestinationPort(5555);
 
     // instantiate a packet
@@ -33,7 +33,7 @@ main(int argc, char* argv[])
     std::cout << std::endl;
 
     // you can now remove the header from the packet:
-    RDMIHeader destinationHeader;
+    rdmi::RDMIHeader destinationHeader;
     p->RemoveHeader(destinationHeader);
 
     // and check that the destination and source

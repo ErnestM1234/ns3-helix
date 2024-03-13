@@ -8,8 +8,9 @@
 #include "rdmi-header.h"
 
 
-namespace ns3
-{
+namespace ns3 {
+namespace rdmi {
+
 NS_OBJECT_ENSURE_REGISTERED(RDMIHeader);
 NS_LOG_COMPONENT_DEFINE("RDMI_Header");
 
@@ -127,5 +128,5 @@ RDMIHeader::SetMsgType(uint16_t msg_type)
     m_msg_type = msg_type;
 }
 
-
+} // namespace rdmi
 } // namespace ns3

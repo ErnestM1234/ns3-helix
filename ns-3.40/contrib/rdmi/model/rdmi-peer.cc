@@ -7,8 +7,8 @@
 #include "rdmi-header.h"
 
 
-namespace ns3
-{
+namespace ns3 {
+namespace rdmi {
 
 NS_OBJECT_ENSURE_REGISTERED(RDMIPeer);
 NS_LOG_COMPONENT_DEFINE("RDMI_Peer");
@@ -240,7 +240,7 @@ uint32_t RDMIPeer::Decapsulate(Ptr<Packet> p, RDMIHeader h)
 
 
 /* **************************************************************** */
-/* RDMI SOCKET ENCAPSULATION METHODS */
+/* RDMI SOCKET BUFFER INTERFACE METHODS */
 /* **************************************************************** */
 
 
@@ -304,7 +304,7 @@ RDMIPeer::CreateBufferPair(uint16_t id)
   m_socketBuffers.insert(std::make_pair(
     GetMsgBufferId(id),
     msg_buffer));
-  m_rdmiSocketList.insert(std::make_pair(
+  m_socketBuffers.insert(std::make_pair(
     GetDataBufferId(id),
     data_buffer));
 }
@@ -361,4 +361,5 @@ RDMIPeer::WriteToDataBuffer(uint16_t id, Ptr<Packet> p)
   rdmi_buffer->WritePacket(p);
 }
 
+} // namespace rdmi
 } // namespace ns3

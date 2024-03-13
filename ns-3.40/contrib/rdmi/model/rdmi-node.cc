@@ -8,17 +8,17 @@
 
 
 
-namespace ns3
-{
+namespace ns3 {
+namespace rdmi {
 
 NS_LOG_COMPONENT_DEFINE("Rdmi_Node");
 
 RdmiNode::RdmiNode()
     :   m_count(0),
-        m_cap(RDMI_BUFF_DEFAULT_SIZE)
+        m_cap(RDMI_BUFF_DEFAULT_SIZE_BYTES)
 {
     NS_LOG_FUNCTION(this << m_cap);
-    m_buffer = new uint8_t[RDMI_BUFF_DEFAULT_SIZE];
+    m_buffer = new uint8_t[RDMI_BUFF_DEFAULT_SIZE_BYTES];
 }
 
 RdmiNode::RdmiNode(uint32_t capacity)
@@ -26,7 +26,7 @@ RdmiNode::RdmiNode(uint32_t capacity)
         m_cap(capacity)
 {
     NS_LOG_FUNCTION(this << capacity);
-    NS_ASSERT(capacity <= RDMI_BUFF_MAX_SIZE);
+    NS_ASSERT(capacity <= RDMI_BUFF_MAX_SIZE_BYTES);
     m_buffer = new uint8_t[capacity];
 }
 
@@ -173,5 +173,5 @@ RdmiNode::SetMetadata(uint16_t dest_port, uint32_t seqno, char msg_type)
     m_msg_type = msg_type;
 }
 
-
+} // namespace rdmi
 } // namespace ns3

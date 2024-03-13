@@ -11,14 +11,14 @@
  * \defgroup rdminode TODO: Description of the rdmi buffer
  */
 
-namespace ns3
-{
+namespace ns3 {
+namespace rdmi {
 
-class Buffer;
-class Packet;
+// class ns3::Buffer;
+// class ns3::Packet;
 
-uint32_t RDMI_BUFF_MAX_SIZE = 2048; // more or less arbitrary
-uint32_t RDMI_BUFF_DEFAULT_SIZE = 2048; // more or less arbitrary
+static const uint32_t RDMI_BUFF_MAX_SIZE_BYTES = 2048; // more or less arbitrary
+static const uint32_t RDMI_BUFF_DEFAULT_SIZE_BYTES = 2048; // more or less arbitrary
 
 /**
  * \ingroup rdminode
@@ -129,6 +129,7 @@ class RdmiNode {
         /**
          * \brief Writes a packet to the buffer
          * \param p the packet to write to the buffer
+         * \returns number of bytes written
          */
         uint32_t WritePacket(Ptr<Packet> p);
 
@@ -191,6 +192,7 @@ class RdmiNode {
 
 };
 
+} // namespace rdmi
 } // namespace ns3
 
 #endif /* RDMI_NODE_H */

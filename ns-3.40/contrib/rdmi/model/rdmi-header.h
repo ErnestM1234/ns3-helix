@@ -5,10 +5,10 @@
 #include "ns3/ptr.h"
 
 
-namespace ns3
-{
+namespace ns3 {
+namespace rdmi {
 
-class Packet;
+// class Packet;
 
 // TODO: Add sequence number
 
@@ -169,7 +169,7 @@ class RDMIHeader : public Header {
 
 };
 
-
+} // namespace rdmi
 } // namespace ns3
 
 #endif /* RDMI_HEADER_H */

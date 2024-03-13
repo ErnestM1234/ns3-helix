@@ -2,8 +2,8 @@
 // RDMI
 #include "rdmi.h"
 
-namespace ns3
-{
+namespace ns3 {
+namespace rdmi {
 
 NS_OBJECT_ENSURE_REGISTERED(RDMI);
 NS_LOG_COMPONENT_DEFINE("RDMI");
@@ -49,4 +49,6 @@ void RDMI::StopApplication()
     // TODO: Start Application Logic
 }
 
+
+} // namespace rdmi
 } // namespace ns3

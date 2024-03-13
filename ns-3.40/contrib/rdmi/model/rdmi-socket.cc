@@ -2,8 +2,8 @@
 // RDMI
 #include "rdmi-socket.h"
 
-namespace ns3
-{
+namespace ns3 {
+namespace rdmi {
 
 NS_OBJECT_ENSURE_REGISTERED(RDMISocket);
 NS_LOG_COMPONENT_DEFINE("RDMI_Socket");
@@ -12,14 +12,7 @@ TypeId RDMISocket::GetTypeId()
 {
   static TypeId tid =
     TypeId("ns3::RDMI")
-        .SetParent<Socket>()
-        .AddAttribute("MaxSegLifetime",
-                        "Maximum segment lifetime in seconds, use for TIME_WAIT state transition "
-                        "to CLOSED state",
-                        DoubleValue(120), /* RFC793 says MSL=2 minutes*/
-                        MakeDoubleAccessor(&TcpSocketBase::m_msl),
-                        MakeDoubleChecker<double>(0))
-    ;
+        .SetParent<Socket>();
   return tid;
 }
 
@@ -140,14 +133,17 @@ uint32_t
 RDMISocket::GetTxAvailable() const
 {
     NS_LOG_FUNCTION(this);
-    return m_rdmi_peer->GetTxAvailable(m_port);
+    // TODO: return the Tx appropriate for the next message in the buff
+    return m_rdmi_peer->GetTxAvailableMsgBuff(m_port);
 }
 
 int
 RDMISocket::Send(Ptr<Packet> p, uint32_t flags)
 {
     NS_LOG_FUNCTION(this << p << flags);
-    return m_rdmi_peer->Send(m_port, p, flags);
+    // TODO: send to the appropriate buffer
+    m_rdmi_peer->SocketSendToDataBuff(m_port, p);
+    return 0;
 }
 
 
@@ -235,4 +231,5 @@ RDMISocket::Ipv6JoinGroup
 }
 
 
+} // namespace rdmi
 } // namespace ns3

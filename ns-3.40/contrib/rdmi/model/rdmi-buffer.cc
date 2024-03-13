@@ -9,8 +9,8 @@
 #include "rdmi-buffer.h"
 
 
-namespace ns3
-{
+namespace ns3 {
+namespace rdmi {
 
 NS_OBJECT_ENSURE_REGISTERED(RdmiBuffer);
 NS_LOG_COMPONENT_DEFINE("Rdmi_Buffer");
@@ -104,7 +104,6 @@ RdmiBuffer::WritePacket(Ptr<Packet> p)
     NS_ASSERT(size <= m_byte_cap - m_byte_count && size != 0); // we assume we only write when buff empty
     uint32_t node_space = m_end->GetCapacity(); // total bytes in a node
     uint16_t node_count = (size / node_space) + 1; // integer div, so not counting overflow to last node
-    uint32_t extra_bytes = size % node_space;
 
     // mark first node as a header node
     m_end = m_end->GetNext();
@@ -252,7 +251,7 @@ void
 RdmiBuffer::AllocateNodes()
 {
     NS_LOG_FUNCTION(this);
-    NS_ASSERT(m_node_cap <= RDMI_BUFFER_SIZE_MAX_BYTES);
+    NS_ASSERT(m_node_cap <= RDMI_BUFFER_MAX_NODES);
     if (m_node_cap == 0) return;
 
     m_start = new RdmiNode(); // default size
@@ -270,7 +269,7 @@ void
 RdmiBuffer::AllocateNodes(uint16_t size)
 {
     NS_LOG_FUNCTION(this << size);
-    NS_ASSERT(size <= RDMI_BUFFER_SIZE_MAX_BYTES);
+    NS_ASSERT(size <= RDMI_BUFFER_MAX_NODES);
     m_node_cap = size;
     AllocateNodes();
 }
@@ -428,5 +427,5 @@ RdmiBuffer::SetNodeCapacity(uint16_t capacity)
     m_node_cap = capacity;
 }
 
-
+} // namespace rdmi
 } // namespace ns3

@@ -16,12 +16,14 @@
  * \defgroup rdmi TODO: Description of the rdmi
  */
 
-namespace ns3
-{
+namespace ns3 {
+namespace rdmi {
 
 
-class Node;
-class Packet;
+// class ns3::Node;
+// class ns3::Packet;
+// typedef ns3::Node Node;
+// typedef ns3::Packet Packet;
 
 class RDMIPeer;
 class RDMISocket;
@@ -51,10 +53,11 @@ class RDMI : public Application {
         void StopApplication() override;
 
     private:
-        std::vector<Ptr<RDMIPeer> >              m_peerList;        // A list of currently connected peers
-        std::vector<Ptr<RDMISocket> >            m_rdmiSocketList;  // A list of current rdmiSockets
+        // std::vector<Ptr<RDMIPeer> >              m_peerList;        // A list of currently connected peers
+        // std::vector<Ptr<RDMISocket> >            m_rdmiSocketList;  // A list of current rdmiSockets
 };
 
+} // namespace rdmi
 } // namespace ns3
 
 #endif /* RDMI_H */

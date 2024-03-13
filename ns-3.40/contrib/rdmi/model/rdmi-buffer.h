@@ -14,16 +14,16 @@
  * \defgroup rdmibuffer TODO: Description of the rdmi buffer
  */
 
-namespace ns3
-{
+namespace ns3 {
+namespace rdmi {
 
-class Node;
-class Packet;
+// class Node;
+// class Packet;
 
 class RdmiNode;
 
-
-uint16_t RDMI_BUFFER_SIZE_MAX_BYTES = 131072; // more or less arbitrary
+// maximum number of nodes
+static const uint16_t RDMI_BUFFER_MAX_NODES = 65535; // more or less arbitrary
 
 /**
  * \ingroup rdmibuffer
@@ -270,6 +270,7 @@ class RdmiBuffer : public Object {
         uint32_t        m_byte_count;       // number of bytes used
         uint32_t        m_byte_cap;         // total number of bytes that can be stored
 
+        // TODO: write a function to return this value
         uint32_t        m_available_datagram_size;  // the size of the first available datagram ready to be transmitted
 
         // meta data
@@ -280,6 +281,7 @@ class RdmiBuffer : public Object {
 
 };
 
+} // namespace rdmi
 } // namespace ns3
 
 #endif /* RDMI_BUFFER_H */

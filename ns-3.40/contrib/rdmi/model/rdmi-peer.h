@@ -19,11 +19,11 @@
 
 
 
-namespace ns3
-{
+namespace ns3 {
+namespace rdmi {
 
-class Node;
-class Packet;
+// class Node;
+// class Packet;
 
 class RDMI;
 class RDMISocket;
@@ -169,6 +169,8 @@ class RDMIPeer : public Object {
          * \brief How many currently connected RdmiSockets
          */
         size_t GetRdmiSocketCount() const;
+
+    private:
 
         std::unordered_map<uint16_t, Ptr<RDMISocket> >      m_rdmiSocketList;    // A list of sockets currently interfacing with the client
 
@@ -334,12 +336,24 @@ class RDMIPeer : public Object {
         /**
          * \brief Can create a new buffer pair given number of available bytes
          * \returns true if there is enough bytes for adding a buffer
+         * 
+         * A buffer pair just refers to a data buffer and a message buffer.
+         * These appear in pairs because each socket will have one of each:
+         * one for sending messages (in-order) and one for sending data
+         * (un-ordered). Generally, the databuffer is assumed to be larger
+         * as more data will be sent.
          */
         bool CanCreateBufferPair();
 
         /**
          * \brief Create a data buffer and message buffer
          * \param id the RDMISocket id
+         * 
+         * A buffer pair just refers to a data buffer and a message buffer.
+         * These appear in pairs because each socket will have one of each:
+         * one for sending messages (in-order) and one for sending data
+         * (un-ordered). Generally, the databuffer is assumed to be larger
+         * as more data will be sent.
          * 
          * There must be enough free nodes in the transmission buffer to
          * perform this action.
@@ -381,7 +395,7 @@ class RDMIPeer : public Object {
         std::unordered_map<uint16_t, Ptr<RdmiBuffer> >      m_socketBuffers;    // A list of message buffers associated with each socket
 };
 
-
+} // namespace rdmi
 } // namespace ns3
 
 #endif /* RDMI_PEER_H */
