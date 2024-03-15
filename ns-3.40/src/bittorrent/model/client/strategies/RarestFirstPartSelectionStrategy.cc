@@ -34,7 +34,7 @@
 namespace ns3 {
 namespace bittorrent  {
 
-NS_LOG_COMPONENT_DEFINE ("bittorrent::RarestFirstPartSelectionStrategy");
+NS_LOG_COMPONENT_DEFINE ("BittorrentRarestFirstPartSelectionStrategy");
 NS_OBJECT_ENSURE_REGISTERED (RarestFirstPartSelectionStrategy);
 
 RarestFirstPartSelectionStrategy::RarestFirstPartSelectionStrategy (Ptr<BitTorrentClient> myClient) : PartSelectionStrategyBase (myClient)

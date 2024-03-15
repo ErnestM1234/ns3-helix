@@ -371,6 +371,7 @@ std::string BitTorrentTracker::GenerateResponseForPeer (const BTDict& clientInfo
 
   std::map<std::string, BitTorrentTrackerCloudInfo>::const_iterator cloudInfoIt;
   cloudInfoIt = m_cloudInfo.find (info_hash);
+  NS_LOG_INFO("BitTorrentTracker GenerateResponseForPeer Clients in cloud: " << (*cloudInfoIt).second.m_clients.size());
 
   // Generate an answer for an announce (first case) or a scrape request (second case)
   if(clientInfo.find ("event") == clientInfo.end () || (*(clientInfo.find ("event"))).second.compare ("scrape") != 0)
@@ -630,6 +631,7 @@ void BitTorrentTracker::SetClientToSeeder (BTDict& clientInfo)
   std::transform (info_hash.begin (), info_hash.end (), info_hash.begin (), toupper);
   std::string peer_id = (*(clientInfo.find ("peer_id"))).second;
   std::map<std::string, BitTorrentTrackerCloudInfo>::iterator cloudInfoIt;
+  NS_LOG_INFO("BitTorrentTracker: SetClientToSeeder peer_id: " << peer_id);
 
   cloudInfoIt = m_cloudInfo.find (info_hash);
   clientInfo.insert (std::pair<std::string, std::string> ("finished after", lexical_cast<std::string> (Simulator::Now ().GetSeconds ())));

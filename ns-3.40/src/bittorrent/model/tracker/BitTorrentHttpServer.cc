@@ -74,6 +74,8 @@ bool BitTorrentHttpServer::ConnectionRequest (Ptr<Socket> socket, const Address 
 
 void BitTorrentHttpServer::ConnectionCreated (Ptr<Socket> socket, const Address &addr, Callback<void, Ptr<Socket> > handleReceiveRequest)
 {
+  InetSocketAddress inetAddr = InetSocketAddress::ConvertFrom(addr);
+  NS_LOG_DEBUG("BitTorrentHttpServer::ConnectionCreated() " << inetAddr.GetIpv4());
   socket->SetRecvCallback (handleReceiveRequest);
   socket->SetCloseCallbacks (MakeCallback (&BitTorrentHttpServer::NormalClose, this),
                              MakeCallback (&BitTorrentHttpServer::ErrorClose, this)
@@ -97,6 +99,9 @@ void BitTorrentHttpServer::ReceiveRequest (Ptr<Socket> socket, Callback<void, st
       data.append (std::string (reinterpret_cast<const char *> (buf), packet->GetSize ()));
       delete[] buf;
     }
+  
+  InetSocketAddress inetAddr = InetSocketAddress::ConvertFrom(fromAddress);
+  NS_LOG_DEBUG("BitTorrentHttpServer::ReceiveRequest() " << inetAddr.GetIpv4());
   // parse url
   if (data.find ("GET /",0) == 0)
     {

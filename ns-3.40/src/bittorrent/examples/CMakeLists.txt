@@ -6,6 +6,12 @@ build_lib_example(
                     ${libbittorrent}
 )
 
+build_lib_example(
+  NAME bittorrent-1-peer
+  SOURCE_FILES bittorrent-1-peer.cc
+  LIBRARIES_TO_LINK ${libbittorrent}
+)
+
 if(${ENABLE_REAL_TIME})
     build_lib_example(
         NAME vodsim

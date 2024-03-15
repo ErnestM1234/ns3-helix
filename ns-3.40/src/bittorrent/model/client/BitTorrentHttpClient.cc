@@ -79,6 +79,7 @@ bool BitTorrentHttpClient::HttpGetRequest (Ptr<Node> node, TypeId typeidvar, Ipv
   std::ostringstream request;
   request << "GET " << path << " HTTP/1.1\r\nHost: " << addr << "\r\nConnection: close\r\n\r\n";
   std::string requeststr = request.str ();
+  NS_LOG_INFO ("BitTorrentHttpClient::HttpGetRequest()");
   if (m_socket->GetTxAvailable () >= requeststr.length ())
     {
       m_socket->Send ((uint8_t*)requeststr.c_str (), requeststr.length (), 0);

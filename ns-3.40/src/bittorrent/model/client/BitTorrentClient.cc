@@ -50,7 +50,7 @@
 namespace ns3 {
 namespace bittorrent {
 
-NS_LOG_COMPONENT_DEFINE ("bittorrent::BitTorrentClient");
+NS_LOG_COMPONENT_DEFINE ("BittorrentBitTorrentClient");
 NS_OBJECT_ENSURE_REGISTERED (BitTorrentClient);
 
 BitTorrentClient::BitTorrentClient ()
@@ -662,6 +662,7 @@ void BitTorrentClient::ApplicationInitializedEvent ()
 
 void BitTorrentClient::TrackerResponseReceivedEvent ()
 {
+  // NS_LOG_INFO("BitTorrentClient::TrackerResponseReceivedEvent()");
   std::list<Callback<void> >::iterator iter = m_trackerResponseReceivedListerners.begin ();
   for (; iter != m_trackerResponseReceivedListerners.end (); ++iter)
     {
@@ -904,7 +905,8 @@ void BitTorrentClient::AnnounceMetrics (std::multimap<std::string, std::string> 
     {
       for (std::multimap<std::string, std::string>::const_iterator it = metrics.begin (); it != metrics.end (); ++it)
         {
-          std::cout << Simulator::Now ().GetMilliSeconds () << ": Node " << GetNode ()->GetId () << ": " << (*it).first << "=" << (*it).second << std::endl;
+          // std::cout << Simulator::Now ().GetMilliSeconds () << ": Node " << GetNode ()->GetId () << ": " << (*it).first << "=" << (*it).second << std::endl;
+          NS_LOG_INFO(Simulator::Now ().GetMilliSeconds () << ": Node " << GetNode ()->GetId () << ": " << (*it).first << "=" << (*it).second);
           // GlobalMetricsGatherer::GetInstance ()->WriteToFile ((*it).first, "Node " + lexical_cast<std::string> (GetNode ()->GetId ()) + ": " + (*it).second, true);
         }
     }

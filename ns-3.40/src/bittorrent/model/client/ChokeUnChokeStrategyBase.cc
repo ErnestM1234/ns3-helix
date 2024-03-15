@@ -36,7 +36,7 @@
 namespace ns3 {
 namespace bittorrent {
 
-NS_LOG_COMPONENT_DEFINE ("bittorrent::CokeUnChokeStrategyBase");
+NS_LOG_COMPONENT_DEFINE ("BittorrentChokeUnChokeStrategyBase");
 
 ChokeUnChokeStrategyBase::ChokeUnChokeStrategyBase (Ptr<BitTorrentClient> myClient) : AbstractStrategy (myClient)
 {

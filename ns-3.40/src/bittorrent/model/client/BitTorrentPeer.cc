@@ -40,7 +40,8 @@
 namespace ns3 {
 namespace bittorrent {
 
-NS_LOG_COMPONENT_DEFINE ("bittorrentPeer");
+NS_LOG_COMPONENT_DEFINE ("BittorrentPeer");
+// NS_LOG_COMPONENT_DEFINE ("bittorrent::Peer");
 NS_OBJECT_ENSURE_REGISTERED (Peer);
 
 Peer::Peer (Ptr<BitTorrentClient> myClient)

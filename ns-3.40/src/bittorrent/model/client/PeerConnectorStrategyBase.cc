@@ -46,7 +46,7 @@
 namespace ns3 {
 namespace bittorrent {
 
-NS_LOG_COMPONENT_DEFINE ("bittorrent::PeerConnectorStrategyBase");
+NS_LOG_COMPONENT_DEFINE ("BittorrentPeerConnectorStrategyBase");
 NS_OBJECT_ENSURE_REGISTERED (PeerConnectorStrategyBase);
 
 PeerConnectorStrategyBase::PeerConnectorStrategyBase (Ptr<BitTorrentClient> myClient) : AbstractStrategy (myClient)
@@ -171,6 +171,7 @@ void PeerConnectorStrategyBase::DisconnectFromCloud ()
 
 void PeerConnectorStrategyBase::StartListening (uint16_t port)
 {
+  NS_LOG_INFO("PeerConnectorStrategyBase: Start Listening on port: " << port);
   // Create and open a TCP socket to listen at for incoming connection attempts
   TypeId tid = TypeId::LookupByName ("ns3::TcpSocketFactory");
   m_serverSocket = Socket::CreateSocket (m_myClient->GetNode (), tid);
@@ -216,6 +217,7 @@ void PeerConnectorStrategyBase::ConnectToPeer (Ipv4Address address, uint16_t por
 
 uint16_t PeerConnectorStrategyBase::ConnectToPeers (uint16_t count)
 {
+  // NS_LOG_INFO("PeerConnectorStrategyBase: ConnectToPeers() Peers target count: " << count);
   // We only need to do this if we have not yet completed our download
   if (m_myClient->GetDownloadCompleted ())
     {
@@ -224,6 +226,7 @@ uint16_t PeerConnectorStrategyBase::ConnectToPeers (uint16_t count)
 
   // Step 1: Get the clients that we MAY connect to
   const std::set<std::pair<uint32_t, uint16_t> >& potentialPeers = GetPotentialClients ();
+  NS_LOG_DEBUG("PeerConnectorStrategyBase: ConnectToPeers() potentialPeers.size(): " << potentialPeers.size());
   if (potentialPeers.size () == 0)     // No one we could connect to
     {
       return 0;
@@ -403,6 +406,7 @@ void PeerConnectorStrategyBase::ProcessPeriodicSchedule ()
 
 void PeerConnectorStrategyBase::ProcessPeriodicReannouncements ()
 {
+  NS_LOG_DEBUG("PeerConnectorStrategyBase::ProcessPeriodicReannouncements()");
   if (m_myClient->GetConnectedToCloud ())
     {
       std::map<std::string, std::string> additionalParameters;
@@ -697,6 +701,7 @@ void PeerConnectorStrategyBase::TrackerTimeout (TrackerContactReason reason, uin
 
 bool PeerConnectorStrategyBase::ContactTracker (TrackerContactReason event, uint16_t numwant, std::map<std::string, std::string> additionalParameters, bool closeCurrentConnection)
 {
+  NS_LOG_DEBUG("PeerConnectorStrategyBase::ContactTracker()");
   // Step 1: Initiate a connection with the tracker, close existing ones if required
   if (closeCurrentConnection)
     {
@@ -760,6 +765,7 @@ bool PeerConnectorStrategyBase::ContactTracker (TrackerContactReason event, uint
   // Step 3: Contact the tracker, schedule appropriate timeouts or closings of connections if required
   Ipv4Address trackerAddress = Ipv4Address (announceURL.substr (7, announceURL.find (':', 7) - 7).c_str ());
 
+  NS_LOG_DEBUG("PeerConnectorStrategyBase::ContactTracker() Request");
   if (m_httpCC.HttpGetRequest (m_myClient->GetNode (), TcpSocketFactory::GetTypeId (), trackerAddress, 80, request.str (), MakeCallback (&PeerConnectorStrategyBase::TrackerResponseEvent, this)))
     {
       m_timeoutEvent = Simulator::Schedule (m_timeout, &PeerConnectorStrategyBase::TrackerTimeout, this, event, numwant, true);

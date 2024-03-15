@@ -34,7 +34,8 @@
 namespace ns3 {
 namespace bittorrent  {
 
-NS_LOG_COMPONENT_DEFINE ("bittorrent::PartSelectionStrategyBase");
+// NS_LOG_COMPONENT_DEFINE ("bittorrent::PartSelectionStrategyBase");
+NS_LOG_COMPONENT_DEFINE ("BittorrentPartSelectionStrategyBase");
 
 PartSelectionStrategyBase::PartSelectionStrategyBase (Ptr<BitTorrentClient> myClient) : AbstractStrategy (myClient)
 {
@@ -510,6 +511,9 @@ void PartSelectionStrategyBase::ProcessPeerBlockCompleteEvent (Ptr<Peer> peer, u
 
           // Step 4.2a3: Issue an event indicating the completion of this piece by the sending peer
           m_myClient->PieceCompleteEvent (peer, pieceIndex);
+
+
+          NS_LOG_DEBUG ("Piece " << m_neededPieces.size() << " received.");
         }
       else              // Step 4.2b: In case the piece was not successfully downloaded, re-enter all blocks into the data structure for neeeded blocks
         {

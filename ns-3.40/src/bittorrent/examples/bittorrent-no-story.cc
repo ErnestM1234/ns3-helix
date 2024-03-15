@@ -54,7 +54,8 @@ int main (int argc, char *argv[])
 
 
   NodeContainer nodes;
-  nodes.Create (12);
+  // nodes.Create (12);
+  nodes.Create (3);
   NodeContainer apNode;
   apNode.Create (1);
 
