@@ -12,6 +12,12 @@ build_lib_example(
   LIBRARIES_TO_LINK ${libbittorrent}
 )
 
+build_lib_example(
+  NAME bittorrent-n-peers
+  SOURCE_FILES bittorrent-n-peers.cc
+  LIBRARIES_TO_LINK ${libbittorrent}
+)
+
 if(${ENABLE_REAL_TIME})
     build_lib_example(
         NAME vodsim

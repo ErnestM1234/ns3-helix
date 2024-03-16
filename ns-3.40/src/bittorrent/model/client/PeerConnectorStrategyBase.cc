@@ -226,7 +226,7 @@ uint16_t PeerConnectorStrategyBase::ConnectToPeers (uint16_t count)
 
   // Step 1: Get the clients that we MAY connect to
   const std::set<std::pair<uint32_t, uint16_t> >& potentialPeers = GetPotentialClients ();
-  NS_LOG_DEBUG("PeerConnectorStrategyBase: ConnectToPeers() potentialPeers.size(): " << potentialPeers.size());
+  // NS_LOG_DEBUG("PeerConnectorStrategyBase: ConnectToPeers() potentialPeers.size(): " << potentialPeers.size());
   if (potentialPeers.size () == 0)     // No one we could connect to
     {
       return 0;
@@ -701,7 +701,7 @@ void PeerConnectorStrategyBase::TrackerTimeout (TrackerContactReason reason, uin
 
 bool PeerConnectorStrategyBase::ContactTracker (TrackerContactReason event, uint16_t numwant, std::map<std::string, std::string> additionalParameters, bool closeCurrentConnection)
 {
-  NS_LOG_DEBUG("PeerConnectorStrategyBase::ContactTracker()");
+  // NS_LOG_DEBUG("PeerConnectorStrategyBase::ContactTracker()");
   // Step 1: Initiate a connection with the tracker, close existing ones if required
   if (closeCurrentConnection)
     {
@@ -765,7 +765,7 @@ bool PeerConnectorStrategyBase::ContactTracker (TrackerContactReason event, uint
   // Step 3: Contact the tracker, schedule appropriate timeouts or closings of connections if required
   Ipv4Address trackerAddress = Ipv4Address (announceURL.substr (7, announceURL.find (':', 7) - 7).c_str ());
 
-  NS_LOG_DEBUG("PeerConnectorStrategyBase::ContactTracker() Request");
+  // NS_LOG_DEBUG("PeerConnectorStrategyBase::ContactTracker() Request");
   if (m_httpCC.HttpGetRequest (m_myClient->GetNode (), TcpSocketFactory::GetTypeId (), trackerAddress, 80, request.str (), MakeCallback (&PeerConnectorStrategyBase::TrackerResponseEvent, this)))
     {
       m_timeoutEvent = Simulator::Schedule (m_timeout, &PeerConnectorStrategyBase::TrackerTimeout, this, event, numwant, true);

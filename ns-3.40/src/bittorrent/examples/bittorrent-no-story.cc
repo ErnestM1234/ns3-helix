@@ -55,7 +55,7 @@ int main (int argc, char *argv[])
 
   NodeContainer nodes;
   // nodes.Create (12);
-  nodes.Create (3);
+  nodes.Create (6); // 1 tracker, 1 seed, n-2 peers
   NodeContainer apNode;
   apNode.Create (1);
 

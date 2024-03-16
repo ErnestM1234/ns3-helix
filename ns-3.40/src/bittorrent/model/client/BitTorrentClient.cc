@@ -126,10 +126,6 @@ void BitTorrentClient::StartApplication ()
   m_ip = GetNode ()->GetObject<Ipv4> ()->GetAddress (m_interfaceId, 0).GetLocal ();
   m_interface = GetNode() ->GetDevice (m_interfaceId);
 
-  // // Add Helix to the node
-  // HelixStackHelper helixStackHelper;
-  // helixStackHelper.AddHelix(GetNode());
-
   // Step 2: Check whether the needed torrent is loaded correctly and set the data retrieval pointer accordingly
   StorageManager::GetInstance ()->EnsureFileLoaded (m_torrent->GetDataPath () + "/" + m_torrent->GetFileName ());
   m_torrentDataPtr = StorageManager::GetInstance ()->GetBufferForFile (m_torrent->GetDataPath () + "/" + m_torrent->GetFileName ());
